@@ -34,7 +34,7 @@ Sửa `src/main/resources/application.properties` (hoặc dùng biến môi trư
 2. Trong thư mục gốc project:
 
 ```bash
-mvn spring-boot:run
+./mvnw clean spring-boot:run
 ```
 
 Hoặc build rồi chạy JAR:
