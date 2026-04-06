@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{admin/fragments/admin-layout :: layout('Cài đặt hệ thống', 'settings', ~{::main-content}, ~{::page-scripts})}">
+<head><title>Settings</title></head>
+<body>
+<th:block th:fragment="main-content">
+    <div class="container-fluid" style="max-width: 700px;">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+            <div>
+                <h1 class="fs-3 mb-1">Cài đặt hệ thống</h1>
+                <p class="mb-0 text-secondary">Thông tin rạp chiếu phim</p>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <div th:if="${message}" class="alert alert-success" role="alert">
+                    <i class="ti ti-check me-2"></i><span th:text="${message}"></span>
+                </div>
+                <form th:action="@{/admin/settings/update}" method="post">
+                    <div class="mb-3">
+                        <label class="form-label">Tên website</label>
+                        <input type="text" class="form-control" name="siteName" value="Cinema Ticket Booking" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email liên hệ</label>
+                        <input type="email" class="form-control" name="contactEmail" value="contact@cinema.com" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Địa chỉ rạp</label>
+                        <input type="text" class="form-control" name="address" value="123 Đường ABC, Quận 1, TP.HCM">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Số điện thoại</label>
+                        <input type="text" class="form-control" name="phone" value="1900xxxx">
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="ti ti-device-floppy me-1"></i>Lưu cài đặt
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</th:block>
+<th:block th:fragment="page-scripts"></th:block>
+</body>
+</html>

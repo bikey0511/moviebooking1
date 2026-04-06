@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thanh toán hết hạn</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #141414; color: #ffffff; margin: 0; padding: 0; word-spacing: 0.12em; line-height: 1.55; }
+        .container { max-width: 600px; margin: 0 auto; background: #1f1f1f; border-radius: 16px; overflow: hidden; }
+        .header { background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); padding: 30px; text-align: center; }
+        .header h1 { margin: 0; font-size: 28px; color: #fff; }
+        .content { padding: 30px; }
+        .info-row { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .info-row .label { color: rgba(255,255,255,0.6); flex-shrink: 0; margin-right: 8px; }
+        .info-row .value { font-weight: 600; color: #ffffff !important; text-align: right; word-break: break-word; }
+        .footer { background: #000; padding: 20px; text-align: center; color: rgba(255,255,255,0.5); font-size: 14px; word-spacing: 0.12em; line-height: 1.55; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Hết Hạn Thanh Toán</h1>
+            <p style="margin: 10px 0 0; opacity: 0.9;">Payment Expired</p>
+        </div>
+
+        <div class="content">
+            <p>Xin chào <strong th:text="${user.username}">User</strong>,</p>
+            <p>Rất tiếc, thời gian thanh toán cho đơn đặt vé của bạn đã hết hiệu lực. Đơn hàng đã được tự động hủy bỏ và ghế ngồi đã được trả lại hệ thống.</p>
+
+            <div class="info-row">
+                <span class="label">Phim</span>
+                <span class="value" th:text="${movie.title}">Tên phim</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Ngày chiếu</span>
+                <span class="value" th:text="${#temporals.format(showtime.startTime, 'dd/MM/yyyy')}">01/01/2024</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Giờ chiếu</span>
+                <span class="value" th:text="${#temporals.format(showtime.startTime, 'HH:mm')}">18:00</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Phòng</span>
+                <span class="value" th:text="${room.name}">Phòng 1</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Ghế ngồi</span>
+                <div>
+                    <span th:each="bs : ${seats}" style="display: inline-block; background: #e74c3c; color: #fff; padding: 4px 12px; border-radius: 15px; margin: 2px; font-weight: 600;" th:text="${bs.seat.rowName + bs.seat.seatNumber}">A1</span>
+                </div>
+            </div>
+
+            <p style="margin-top: 25px; color: rgba(255,255,255,0.7);">
+                Bạn có thể đặt lại vé bất kỳ lúc nào trên website Cinema.<br>
+                Cảm ơn bạn đã quan tâm đến dịch vụ của chúng tôi.
+            </p>
+        </div>
+
+        <div class="footer">
+            <p>Cinema - Trải nghiệm điện ảnh tuyệt vời</p>
+            <p style="margin: 0; font-size: 12px;">© 2026 Cinema. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

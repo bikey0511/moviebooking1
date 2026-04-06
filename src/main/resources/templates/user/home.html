@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang Chủ - Đặt Vé Xem Phim</title>
+    <th:block th:replace="~{fragments/user-head :: userStyles}"></th:block>
+    <style>
+        .promo-strip { background: var(--gunmetal-1); border-radius: 16px; padding: 20px; margin-bottom: 24px; border: 1px solid rgba(244, 208, 63, 0.25); }
+        .promo-card-link { color: inherit; text-decoration: none; display: block; height: 100%; }
+        .promo-card-link:hover .promo-card { border-color: rgba(244, 208, 63, 0.45); box-shadow: 0 8px 24px rgba(0,0,0,0.35); }
+        .promo-card { background: rgba(0,0,0,0.35); border-radius: 12px; overflow: hidden; height: 100%; border: 1px solid rgba(255,255,255,0.08); transition: border-color 0.2s, box-shadow 0.2s; }
+        .promo-card img { width: 100%; height: 240px; object-fit: cover; image-rendering: auto; }
+        .promo-card .body { padding: 14px; }
+        .reviewed-pill { font-size: 10px; padding: 3px 8px; border-radius: 999px; background: rgba(46, 204, 113, 0.25); color: #2ecc71; margin-left: 6px; vertical-align: middle; }
+        .rate-film-btn { font-size: 11px; padding: 4px 10px; margin-top: 8px; border-radius: 8px; border: 1px solid rgba(244, 208, 63, 0.6); color: var(--citrine); background: transparent; cursor: pointer; }
+        .rate-film-btn:hover { background: rgba(244, 208, 63, 0.15); }
+        .hero { position: relative; overflow: hidden; }
+        .hero-banner-bg {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.62;
+        }
+        .hero-banner-overlay {
+            position: absolute;
+            inset: 0;
+            /* Trái đậm hơn để chữ đọc được; phải/giữa mở để poster nổi */
+            background: linear-gradient(100deg,
+                rgba(0,0,0,0.78) 0%,
+                rgba(0,0,0,0.42) 38%,
+                rgba(0,0,0,0.28) 62%,
+                rgba(0,0,0,0.45) 100%);
+        }
+        .hero-banner-track {
+            position: absolute;
+            left: -10%;
+            width: 120%;
+            display: flex;
+            gap: 14px;
+            white-space: nowrap;
+            animation: heroMarquee 45s linear infinite;
+        }
+        .hero-banner-track.reverse {
+            animation-direction: reverse;
+            animation-duration: 55s;
+        }
+        .hero-banner-track.top { top: 16%; }
+        .hero-banner-track.bottom { top: 55%; }
+        .hero-banner-item {
+            width: 150px;
+            height: 215px;
+            border-radius: 10px;
+            object-fit: cover;
+            filter: saturate(1.15) contrast(1.08) brightness(1.05);
+            box-shadow: 0 10px 28px rgba(0,0,0,0.4);
+        }
+        .hero .container { position: relative; z-index: 1; }
+        @keyframes heroMarquee {
+            from { transform: translateX(0); }
+            to { transform: translateX(-35%); }
+        }
+    </style>
+</head>
+<body id="top">
+
+    <th:block th:replace="~{fragments/user-layout :: userHeader}"></th:block>
+
+    <main>
+        <article>
+
+            <!-- HERO SECTION -->
+            <section class="hero" id="hero">
+                <div class="hero-banner-bg" th:if="${bannerMovies != null and !bannerMovies.isEmpty()}">
+                    <div class="hero-banner-track top">
+                        <img th:each="movie : ${bannerMovies}" class="hero-banner-item"
+                             th:src="${movie.posterUrl != null} ? ${movie.posterUrl} : '/images/no-poster.jpg'"
+                             th:alt="${movie.title}" loading="lazy">
+                        <img th:each="movie : ${bannerMovies}" class="hero-banner-item"
+                             th:src="${movie.posterUrl != null} ? ${movie.posterUrl} : '/images/no-poster.jpg'"
+                             th:alt="${movie.title}" loading="lazy">
+                    </div>
+                    <div class="hero-banner-track reverse bottom">
+                        <img th:each="movie : ${bannerMovies}" class="hero-banner-item"
+                             th:src="${movie.posterUrl != null} ? ${movie.posterUrl} : '/images/no-poster.jpg'"
+                             th:alt="${movie.title}" loading="lazy">
+                        <img th:each="movie : ${bannerMovies}" class="hero-banner-item"
+                             th:src="${movie.posterUrl != null} ? ${movie.posterUrl} : '/images/no-poster.jpg'"
+                             th:alt="${movie.title}" loading="lazy">
+                    </div>
+                    <div class="hero-banner-overlay"></div>
+                </div>
+                <div class="container">
+                    <div class="hero-content">
+                        <p class="hero-subtitle">Chào Mừng Đến Với</p>
+                        <h1 class="h1 hero-title">
+                            <strong>CINEMA</strong> - Rạp Chiếu Phim Hiện Đại
+                        </h1>
+                        <p class="hero-text">
+                            Trải nghiệm xem phim đỉnh cao với công nghệ âm thanh vòm, 
+                            màn hình lớn nhất thành phố và ghế ngồi siêu êm. 
+                            Đặt vé ngay hôm nay!
+                        </p>
+                        <div class="meta-wrapper">
+                            <div class="badge badge-fill">PG 18</div>
+                            <div class="badge badge-outline">IMAX</div>
+                            <div class="badge badge-fill" style="background: var(--primary-color);">3D</div>
+                        </div>
+                        <a th:href="@{/movies}" class="btn btn-primary">
+                            <ion-icon name="play"></ion-icon>
+                            <span>Xem Phim Ngay</span>
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Thông báo khuyến mãi (admin) -->
+            <section class="section pt-2 pb-0" th:if="${promoAnnouncements != null and !promoAnnouncements.isEmpty()}">
+                <div class="container">
+                    <div class="promo-strip">
+                        <h2 class="h3 section-title" style="margin-bottom: 16px;">
+                            <ion-icon name="megaphone" style="color: var(--citrine);"></ion-icon>
+                            Ưu đãi &amp; mã giảm giá
+                        </h2>
+                        <div class="row g-3">
+                            <div class="col-md-6 col-lg-4" th:each="p : ${promoAnnouncements}">
+                                <a th:href="@{/promo-announcement/{id}(id=${p.id})}" class="promo-card-link">
+                                    <div class="promo-card">
+                                        <img th:if="${p.imageUrl != null and !p.imageUrl.isEmpty()}"
+                                             th:src="${p.imageUrl}" th:alt="${p.title}"
+                                             width="640" height="360" loading="lazy" decoding="async">
+                                        <div class="body">
+                                            <h3 class="h6 mb-2" th:text="${p.title}">Tiêu đề</h3>
+                                            <p class="small text-white-50 mb-2" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;" th:if="${p.description != null and !p.description.isEmpty()}" th:text="${p.description}">Mô tả</p>
+                                            <p class="small mb-0" style="color: var(--citrine);">
+                                                Hết hạn: <span th:text="${#temporals.format(p.expiresAt, 'dd/MM/yyyy HH:mm')}">—</span>
+                                            </p>
+                                            <p class="small text-white-50 mb-0 mt-2"><ion-icon name="chevron-forward-outline"></ion-icon> Xem chi tiết</p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- NOW SHOWING SECTION -->
+            <section class="section section-alt" id="now-showing">
+                <div class="container">
+                    <div class="section-title-wrapper">
+                        <p class="section-subtitle">Phim Hot</p>
+                        <h2 class="h2 section-title">Phim Đang Chiếu</h2>
+                    </div>
+                    
+                    <ul class="movies-grid">
+                        <li th:each="movie, iterStat : ${nowShowing}">
+                            <div class="movie-card" th:data-detail-url="@{/movie/{id}(id=${movie.id})}" onclick="window.location.href=this.dataset.detailUrl">
+                                <figure class="card-banner">
+                                    <img th:src="${movie.posterUrl != null} ? ${movie.posterUrl} : '/images/no-poster.jpg'" 
+                                         th:alt="${movie.title}">
+                                    <div class="play-overlay">
+                                        <ion-icon name="play-circle"></ion-icon>
+                                    </div>
+                                    <span class="badge badge-primary" style="position:absolute;top:10px;right:10px;z-index:2;">
+                                        <i class="fas fa-fire"></i> Hot
+                                    </span>
+                                </figure>
+                                <div class="card-content">
+                                    <h3 class="card-title" th:text="${movie.title}">Tên Phim</h3>
+                                    <div class="card-meta">
+                                        <span>
+                                            <ion-icon name="time-outline"></ion-icon>
+                                            <span th:text="${movie.duration}">120</span> min
+                                        </span>
+                                        <span class="rating">
+                                            <ion-icon name="star"></ion-icon>
+                                            <span th:if="${movieAvgRatings != null and movieAvgRatings[movie.id] != null}" th:text="${movieAvgRatings[movie.id]}">8.5</span>
+                                            <span th:unless="${movieAvgRatings != null and movieAvgRatings[movie.id] != null}">—</span>
+                                            <span sec:authorize="isAuthenticated()" th:if="${reviewedMovieIds != null and reviewedMovieIds.contains(movie.id)}" class="reviewed-pill">Đã đánh giá</span>
+                                        </span>
+                                    </div>
+                                    <button type="button" class="rate-film-btn" th:data-href="@{/movie/{id}(id=${movie.id})}" onclick="event.stopPropagation(); location.href=this.dataset.href + '#reviews';">
+                                        Đánh giá phim
+                                    </button>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                    
+                    <div class="text-center mt-5" th:if="${#lists.isEmpty(nowShowing)}">
+                        <p style="color: var(--gainsboro);">Hiện không có phim đang chiếu</p>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <a th:href="@{/movies(status='now-showing')}" class="btn btn-outline">
+                            Xem Tất Cả Phim Đang Chiếu
+                            <ion-icon name="arrow-forward"></ion-icon>
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- UPCOMING SECTION -->
+            <section class="section" id="upcoming" th:if="${!#lists.isEmpty(comingSoon)}">
+                <div class="container">
+                    <div class="section-title-wrapper">
+                        <p class="section-subtitle">Sắp Ra Mắt</p>
+                        <h2 class="h2 section-title">Phim Sắp Chiếu</h2>
+                    </div>
+                    
+                    <ul class="movies-list has-scrollbar">
+                        <li th:each="movie : ${comingSoon}">
+                            <div class="movie-card" th:onclick="'location.href=\'/movie/' + ${movie.id} + '\''">
+                                <figure class="card-banner">
+                                    <img th:src="${movie.posterUrl != null} ? ${movie.posterUrl} : '/images/no-poster.jpg'" 
+                                         th:alt="${movie.title}">
+                                    <div class="play-overlay">
+                                        <ion-icon name="play-circle"></ion-icon>
+                                    </div>
+                                    <span class="badge badge-warning" style="position:absolute;top:10px;right:10px;z-index:2;">
+                                        <ion-icon name="calendar"></ion-icon>
+                                        <span th:text="${#temporals.format(movie.releaseDate, 'dd/MM')}">01/01</span>
+                                    </span>
+                                </figure>
+                                <div class="card-content">
+                                    <h3 class="card-title" th:text="${movie.title}">Tên Phim</h3>
+                                    <div class="card-meta">
+                                        <span>
+                                            <ion-icon name="time-outline"></ion-icon>
+                                            <span th:text="${movie.duration}">120</span> min
+                                        </span>
+                                        <span class="rating">
+                                            <ion-icon name="star-outline"></ion-icon>
+                                            Sắp chiếu
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                    
+                    <div class="text-center mt-4">
+                        <a th:href="@{/movies(status='coming-soon')}" class="btn btn-outline">
+                            Xem Tất Cả Phim Sắp Chiếu
+                            <ion-icon name="arrow-forward"></ion-icon>
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CTA SECTION -->
+            <section class="section" style="background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('/images/cta-bg.jpg') no-repeat; background-size: cover; background-position: center;">
+                <div class="container text-center">
+                    <h2 class="h2" style="margin-bottom: 20px;">Ưu Đãi Đặc Biệt</h2>
+                    <p style="color: var(--gainsboro); max-width: 600px; margin: 0 auto 30px;">
+                        Đăng ký thành viên ngay hôm nay để nhận ngay voucher giảm 20% 
+                        cho lần đặt vé đầu tiên và nhiều ưu đãi hấp dẫn khác!
+                    </p>
+                    <a sec:authorize="!isAuthenticated()" th:href="@{/auth/register}" class="btn btn-primary btn-lg">
+                        <ion-icon name="gift"></ion-icon>
+                        <span>Đăng Ký Ngay</span>
+                    </a>
+                    <a sec:authorize="isAuthenticated()" th:href="@{/movies}" class="btn btn-primary btn-lg">
+                        <ion-icon name="film"></ion-icon>
+                        <span>Đặt Vé Ngay</span>
+                    </a>
+                </div>
+            </section>
+
+        </article>
+    </main>
+
+    <th:block th:replace="~{fragments/user-layout :: userFooter}"></th:block>
+
+    <!-- GO TO TOP -->
+    <a href="#top" class="go-top" data-go-top>
+        <ion-icon name="chevron-up"></ion-icon>
+    </a>
+
+    <th:block th:replace="~{fragments/user-layout :: commonScripts}"></th:block>
+    <script>
+        // Animate elements on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.movie-card').forEach(card => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(30px)';
+            card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(card);
+        });
+    </script>
+</body>
+</html>

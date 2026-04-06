@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+    <!-- HEADER + overlay — dùng chung mọi trang user -->
+    <th:block th:fragment="userHeader">
+        <!-- Toast thông báo voucher mới -->
+        <div id="voucherToast" class="voucher-toast" hidden>
+            <div class="voucher-toast-inner">
+                <div class="voucher-toast-icon">
+                    <ion-icon name="pricetags"></ion-icon>
+                </div>
+                <div class="voucher-toast-body">
+                    <div class="voucher-toast-title">Chúc mừng bạn đã nhận được voucher mới!</div>
+                    <div class="voucher-toast-code" id="voucherToastCode"></div>
+                    <div class="voucher-toast-hint">Bấm nút <strong>Voucher</strong> phía trên để xem chi tiết</div>
+                </div>
+                <button type="button" class="voucher-toast-close" onclick="closeVoucherToast()">
+                    <ion-icon name="close"></ion-icon>
+                </button>
+            </div>
+        </div>
+
+        <header class="header" data-header>
+            <div class="container">
+                <a th:href="@{/}" class="logo">
+                    <ion-icon name="film"></ion-icon>
+                    <span>CINEMA</span>
+                </a>
+                <nav class="cinema-navbar" data-navbar>
+                    <div class="navbar-top">
+                        <a th:href="@{/}" class="logo">
+                            <ion-icon name="film"></ion-icon>
+                            <span>CINEMA</span>
+                        </a>
+                        <button type="button" class="menu-close-btn" data-menu-close-btn aria-label="Đóng menu">
+                            <ion-icon name="close-outline"></ion-icon>
+                        </button>
+                    </div>
+                    <ul class="navbar-list">
+                        <li><a th:href="@{/}" class="navbar-link">Trang Chủ</a></li>
+                        <li><a th:href="@{/movies}" class="navbar-link">Phim</a></li>
+                        <li sec:authorize="!isAuthenticated()">
+                            <a th:href="@{/auth/login}" class="navbar-link">Đăng Nhập</a>
+                        </li>
+                        <li sec:authorize="!isAuthenticated()">
+                            <a th:href="@{/auth/register}" class="navbar-link">Đăng Ký</a>
+                        </li>
+                        <li sec:authorize="isAuthenticated() and hasRole('STAFF')">
+                            <a th:href="@{/staff/profile}" class="navbar-link">Thông tin cá nhân</a>
+                        </li>
+                        <li sec:authorize="isAuthenticated() and !hasRole('STAFF')">
+                            <a th:href="@{/user/profile}" class="navbar-link">Thông tin cá nhân</a>
+                        </li>
+                        <li sec:authorize="isAuthenticated() and !hasRole('STAFF')">
+                            <a th:href="@{/user/bookings}" class="navbar-link">Vé &amp; thanh toán</a>
+                        </li>
+                        <li sec:authorize="isAuthenticated()">
+                            <a th:href="@{/quiz/play}" class="navbar-link">Đố câu hỏi</a>
+                        </li>
+                        <li sec:authorize="isAuthenticated()">
+                            <a th:href="|@{/movies(status='now-showing')}#danh-gia-phim|" class="navbar-link">Đánh giá phim</a>
+                        </li>
+                        <li sec:authorize="hasRole('STAFF')">
+                            <a th:href="@{/staff/dashboard}" class="navbar-link">Nhân viên</a>
+                        </li>
+                        <li sec:authorize="isAuthenticated()">
+                            <form th:action="@{/auth/logout}" method="post" style="margin:0;">
+                                <button type="submit" class="navbar-link" style="background:none;border:none;color:inherit;cursor:pointer;width:100%;text-align:left;">
+                                    Đăng Xuất
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                    <ul class="navbar-social-list" sec:authorize="!isAuthenticated()">
+                        <li><a href="#" class="navbar-social-link"><ion-icon name="logo-facebook"></ion-icon></a></li>
+                        <li><a href="#" class="navbar-social-link"><ion-icon name="logo-twitter"></ion-icon></a></li>
+                        <li><a href="#" class="navbar-social-link"><ion-icon name="logo-instagram"></ion-icon></a></li>
+                        <li><a href="#" class="navbar-social-link"><ion-icon name="logo-youtube"></ion-icon></a></li>
+                    </ul>
+                </nav>
+                <div class="promo-bell-wrap" data-promo-bell-wrap>
+                    <button type="button" class="promo-bell-btn" data-promo-bell-btn aria-label="Thông báo khuyến mãi" aria-expanded="false" aria-haspopup="true">
+                        <ion-icon name="notifications-outline"></ion-icon>
+                        <span class="promo-bell-badge" data-promo-badge hidden>0</span>
+                    </button>
+                    <div class="promo-bell-dropdown" data-promo-dropdown hidden>
+                        <div class="promo-bell-dropdown-title">Ưu đãi &amp; khuyến mãi</div>
+                        <ul class="promo-bell-list" data-promo-list></ul>
+                        <p class="promo-bell-empty mb-0 px-3 py-3" data-promo-empty hidden style="color: var(--gainsboro); font-size: var(--fs-11);">Hiện không có thông báo nào.</p>
+                    </div>
+                </div>
+                <div class="voucher-wrap" sec:authorize="isAuthenticated()" data-voucher-wrap>
+                    <button type="button" class="voucher-btn" data-voucher-btn aria-label="Voucher của tôi" aria-expanded="false" aria-haspopup="true">
+                        <ion-icon name="pricetag-outline"></ion-icon>
+                        <span class="voucher-badge" data-voucher-badge hidden>0</span>
+                    </button>
+                    <div class="voucher-dropdown" data-voucher-dropdown hidden>
+                        <div class="voucher-dropdown-title">Voucher của bạn</div>
+                        <ul class="voucher-list" data-voucher-list></ul>
+                        <p class="voucher-empty mb-0 px-3 py-3" data-voucher-empty hidden style="color: var(--gainsboro); font-size: var(--fs-11);">Bạn chưa có voucher nào.</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <a th:href="@{/movies}" class="search-btn" aria-label="Tìm phim">
+                        <ion-icon name="search-outline"></ion-icon>
+                    </a>
+                    <a sec:authorize="!isAuthenticated()" th:href="@{/auth/login}" class="btn btn-primary">
+                        <ion-icon name="person-outline"></ion-icon>
+                        <span>Đăng Nhập</span>
+                    </a>
+                    <div sec:authorize="isAuthenticated()" class="user-menu-wrap">
+                        <button type="button" class="user-menu-trigger" aria-expanded="false" aria-haspopup="true" id="userMenuBtn">
+                            <ion-icon name="person-circle-outline"></ion-icon>
+                            <ion-icon name="chevron-down-outline" class="user-menu-chevron" aria-hidden="true"></ion-icon>
+                        </button>
+                        <div class="user-dropdown" role="menu" aria-labelledby="userMenuBtn">
+                            <a th:href="@{/staff/profile}" sec:authorize="hasRole('STAFF')" class="user-dropdown-link" role="menuitem">Thông tin cá nhân</a>
+                            <a th:href="@{/user/profile}" sec:authorize="!hasRole('STAFF')" class="user-dropdown-link" role="menuitem">Thông tin cá nhân</a>
+                            <a th:href="@{/user/bookings}" sec:authorize="!hasRole('STAFF')" class="user-dropdown-link" role="menuitem">Vé của tôi</a>
+                            <a th:href="@{/user/bookings}" sec:authorize="!hasRole('STAFF')" class="user-dropdown-link" role="menuitem">Thanh toán</a>
+                            <a th:href="@{/quiz/play}" class="user-dropdown-link" role="menuitem">Đố câu hỏi</a>
+                            <a th:href="|@{/movies(status='now-showing')}#danh-gia-phim|" class="user-dropdown-link" role="menuitem">Đánh giá phim</a>
+                            <form th:action="@{/auth/logout}" method="post" class="user-dropdown-form" role="none">
+                                <button type="submit" class="user-dropdown-logout" role="menuitem">Đăng xuất</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="menu-open-btn" data-menu-open-btn aria-label="Mở menu">
+                    <ion-icon name="reorder-two"></ion-icon>
+                </button>
+            </div>
+        </header>
+        <div class="overlay" data-overlay></div>
+    </th:block>
+    
+    <!-- FOOTER -->
+    <th:block th:fragment="userFooter">
+        <footer class="footer">
+            <div class="container">
+                <ul class="footer-list footer-list--short">
+                    <li><a th:href="@{/}" class="footer-link">Trang Chủ</a></li>
+                    <li><a th:href="@{/movies}" class="footer-link">Phim</a></li>
+                </ul>
+                
+                <div class="divider"></div>
+
+                <div class="quicklink-wrapper" style="display: flex; justify-content: center; flex-wrap: wrap; gap: 10px 20px;">
+                    <ul class="quicklink-list">
+                        <li><a href="#" class="quicklink-link">FAQ</a></li>
+                        <li><a href="#" class="quicklink-link">Hỗ Trợ</a></li>
+                        <li><a href="#" class="quicklink-link">Điều Khoản</a></li>
+                        <li><a href="#" class="quicklink-link">Chính Sách</a></li>
+                    </ul>
+                </div>
+                
+                <ul class="social-list" style="margin-top: 20px;">
+                    <li><a href="#" class="social-link"><ion-icon name="logo-facebook"></ion-icon></a></li>
+                    <li><a href="#" class="social-link"><ion-icon name="logo-twitter"></ion-icon></a></li>
+                    <li><a href="#" class="social-link"><ion-icon name="logo-instagram"></ion-icon></a></li>
+                    <li><a href="#" class="social-link"><ion-icon name="logo-youtube"></ion-icon></a></li>
+                </ul>
+                
+                <div class="footer-bottom">
+                    <p class="copyright">
+                        &copy; 2026 <a href="#">CINEMA</a>. All Rights Reserved
+                    </p>
+                </div>
+            </div>
+        </footer>
+    </th:block>
+    
+    <!-- GO TO TOP -->
+    <th:block th:fragment="goToTop">
+        <a href="#top" class="go-top" data-go-top>
+            <ion-icon name="chevron-up"></ion-icon>
+        </a>
+    </th:block>
+    
+    <!-- COMMON SCRIPTS -->
+    <th:block th:fragment="commonScripts">
+        <script>
+            const header = document.querySelector('[data-header]');
+            if (header) {
+                window.addEventListener('scroll', () => {
+                    header.classList.toggle('active', window.scrollY > 100);
+                });
+            }
+
+            const menuOpenBtn = document.querySelector('[data-menu-open-btn]');
+            const menuCloseBtn = document.querySelector('[data-menu-close-btn]');
+            const navbar = document.querySelector('[data-navbar]');
+            const overlay = document.querySelector('[data-overlay]');
+
+            [menuOpenBtn, menuCloseBtn, overlay].forEach(toggle => {
+                if (toggle && navbar && overlay) {
+                    toggle.addEventListener('click', () => {
+                        navbar.classList.toggle('active');
+                        overlay.classList.toggle('active');
+                        document.body.classList.toggle('active');
+                    });
+                }
+            });
+
+            const goTopBtn = document.querySelector('[data-go-top]');
+            if (goTopBtn) {
+                window.addEventListener('scroll', () => {
+                    goTopBtn.classList.toggle('active', window.scrollY > 500);
+                });
+            }
+
+            const userMenuBtn = document.getElementById('userMenuBtn');
+            const userMenuWrap = document.querySelector('.user-menu-wrap');
+            if (userMenuBtn && userMenuWrap) {
+                userMenuBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    userMenuWrap.classList.toggle('open');
+                    userMenuBtn.setAttribute('aria-expanded', userMenuWrap.classList.contains('open'));
+                });
+                document.addEventListener('click', () => {
+                    userMenuWrap.classList.remove('open');
+                    userMenuBtn.setAttribute('aria-expanded', 'false');
+                });
+                userMenuWrap.addEventListener('click', (e) => e.stopPropagation());
+            }
+
+            (function promoBell() {
+                var wrap = document.querySelector('[data-promo-bell-wrap]');
+                var btn = document.querySelector('[data-promo-bell-btn]');
+                var dropdown = document.querySelector('[data-promo-dropdown]');
+                var listEl = document.querySelector('[data-promo-list]');
+                var emptyEl = document.querySelector('[data-promo-empty]');
+                var badge = document.querySelector('[data-promo-badge]');
+                if (!wrap || !btn || !dropdown || !listEl || !badge) return;
+
+                var LS = 'cinema_promo_read_ids';
+                function readIds() {
+                    try {
+                        var a = JSON.parse(localStorage.getItem(LS) || '[]');
+                        return Array.isArray(a) ? a : [];
+                    } catch (e) { return []; }
+                }
+                function unreadCount(items) {
+                    var r = new Set(readIds().map(String));
+                    return items.filter(function (x) { return !r.has(String(x.id)); }).length;
+                }
+                function setBadge(n) {
+                    if (n > 0) {
+                        badge.textContent = n > 99 ? '99+' : String(n);
+                        badge.hidden = false;
+                    } else {
+                        badge.hidden = true;
+                    }
+                }
+                function renderList(items) {
+                    listEl.innerHTML = '';
+                    if (!items.length) {
+                        emptyEl.hidden = false;
+                        setBadge(0);
+                        return;
+                    }
+                    emptyEl.hidden = true;
+                    items.forEach(function (p) {
+                        var li = document.createElement('li');
+                        var a = document.createElement('a');
+                        a.className = 'promo-bell-item';
+                        a.href = '/promo-announcement/' + encodeURIComponent(p.id);
+                        var img = document.createElement('img');
+                        if (p.imageUrl) {
+                            img.src = p.imageUrl;
+                            img.alt = '';
+                            img.width = 72;
+                            img.height = 48;
+                            img.loading = 'lazy';
+                            img.decoding = 'async';
+                        }
+                        var text = document.createElement('div');
+                        text.className = 'promo-bell-item-text';
+                        var t = document.createElement('div');
+                        t.className = 'promo-bell-item-title';
+                        t.textContent = p.title || 'Ưu đãi';
+                        text.appendChild(t);
+                        if (p.expiresAt) {
+                            var ex = document.createElement('div');
+                            ex.className = 'promo-bell-item-meta';
+                            ex.textContent = 'Hết hạn: ' + formatExp(p.expiresAt);
+                            text.appendChild(ex);
+                        }
+                        if (p.imageUrl) a.appendChild(img);
+                        a.appendChild(text);
+                        li.appendChild(a);
+                        listEl.appendChild(li);
+                    });
+                    setBadge(unreadCount(items));
+                }
+                function formatExp(iso) {
+                    if (!iso) return '—';
+                    var d = new Date(iso);
+                    if (isNaN(d.getTime())) return iso;
+                    var pad = function (x) { return x < 10 ? '0' + x : '' + x; };
+                    return pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+                }
+                function close() {
+                    dropdown.hidden = true;
+                    btn.setAttribute('aria-expanded', 'false');
+                    wrap.classList.remove('open');
+                }
+                function open() {
+                    dropdown.hidden = false;
+                    btn.setAttribute('aria-expanded', 'true');
+                    wrap.classList.add('open');
+                }
+                function toggle() {
+                    if (dropdown.hidden) open(); else close();
+                }
+                btn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    toggle();
+                });
+                document.addEventListener('click', function () { close(); });
+                wrap.addEventListener('click', function (e) { e.stopPropagation(); });
+
+                fetch('/api/promo-announcements/active')
+                    .then(function (r) { return r.ok ? r.json() : []; })
+                    .then(function (data) { renderList(Array.isArray(data) ? data : []); })
+                    .catch(function () { renderList([]); });
+
+                document.addEventListener('visibilitychange', function () {
+                    if (document.visibilityState === 'visible') {
+                        fetch('/api/promo-announcements/active')
+                            .then(function (r) { return r.ok ? r.json() : []; })
+                            .then(function (data) { renderList(Array.isArray(data) ? data : []); })
+                            .catch(function () {});
+                    }
+                });
+            })();
+
+            (function myVouchers() {
+                var wrap = document.querySelector('[data-voucher-wrap]');
+                var btn = document.querySelector('[data-voucher-btn]');
+                var dropdown = document.querySelector('[data-voucher-dropdown]');
+                var listEl = document.querySelector('[data-voucher-list]');
+                var emptyEl = document.querySelector('[data-voucher-empty]');
+                var badge = document.querySelector('[data-voucher-badge]');
+                if (!wrap || !btn || !dropdown || !listEl || !badge) return;
+
+                var LS = 'cinema_voucher_read_ids';
+                function readIds() {
+                    try {
+                        var a = JSON.parse(localStorage.getItem(LS) || '[]');
+                        return Array.isArray(a) ? a : [];
+                    } catch (e) { return []; }
+                }
+                function writeIds(ids) {
+                    try { localStorage.setItem(LS, JSON.stringify(ids)); } catch (e) {}
+                }
+                function setBadge(n) {
+                    if (n > 0) {
+                        badge.textContent = n > 99 ? '99+' : String(n);
+                        badge.hidden = false;
+                    } else {
+                        badge.hidden = true;
+                    }
+                }
+                function close() {
+                    dropdown.hidden = true;
+                    btn.setAttribute('aria-expanded', 'false');
+                    wrap.classList.remove('open');
+                }
+                function open() {
+                    dropdown.hidden = false;
+                    btn.setAttribute('aria-expanded', 'true');
+                    wrap.classList.add('open');
+                }
+                function toggle() {
+                    if (dropdown.hidden) open(); else close();
+                }
+                btn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    toggle();
+                    if (!dropdown.hidden) {
+                        // mark all as read when opened
+                        var ids = readIds();
+                        listEl.querySelectorAll('[data-voucher-id]').forEach(function (x) {
+                            var id = x.getAttribute('data-voucher-id');
+                            if (id && !ids.includes(String(id))) ids.push(String(id));
+                        });
+                        writeIds(ids);
+                        setBadge(0);
+                    }
+                });
+                document.addEventListener('click', function () { close(); });
+                wrap.addEventListener('click', function (e) { e.stopPropagation(); });
+
+                function formatExp(iso) {
+                    if (!iso) return '—';
+                    var d = new Date(iso);
+                    if (isNaN(d.getTime())) return iso;
+                    var pad = function (x) { return x < 10 ? '0' + x : '' + x; };
+                    return pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear();
+                }
+                function label(v) {
+                    if (!v) return '';
+                    var type = v.discountType === 'TICKET' ? 'Vé' : (v.discountType === 'CONCESSION' ? 'Bắp nước' : 'Voucher');
+                    var val = v.valueType === 'PERCENT' ? (v.value + '%') : (Number(v.value || 0).toLocaleString('vi-VN') + ' VNĐ');
+                    return type + ' · Giảm ' + val;
+                }
+                function unreadCount(items) {
+                    var r = new Set(readIds().map(String));
+                    return items.filter(function (x) { return !r.has(String(x.id)); }).length;
+                }
+                function render(items) {
+                    listEl.innerHTML = '';
+                    if (!items.length) {
+                        emptyEl.hidden = false;
+                        setBadge(0);
+                        return;
+                    }
+                    emptyEl.hidden = true;
+                    items.forEach(function (v) {
+                        var li = document.createElement('li');
+                        var a = document.createElement('a');
+                        a.className = 'voucher-item';
+                        a.href = '#';
+                        a.setAttribute('data-voucher-id', String(v.id));
+                        a.addEventListener('click', function (e) {
+                            e.preventDefault();
+                            try {
+                                navigator.clipboard.writeText(v.code || '');
+                            } catch (err) {}
+                            a.classList.add('copied');
+                            setTimeout(function () { a.classList.remove('copied'); }, 900);
+                        });
+                        var text = document.createElement('div');
+                        text.className = 'voucher-item-text';
+                        var t = document.createElement('div');
+                        t.className = 'voucher-item-title';
+                        t.textContent = (v.code || 'VOUCHER');
+                        var meta = document.createElement('div');
+                        meta.className = 'voucher-item-meta';
+                        var useLine = (typeof v.usesRemaining === 'number' && typeof v.maxUsesPerUser === 'number')
+                            ? (' · Còn ' + v.usesRemaining + '/' + v.maxUsesPerUser + ' lần')
+                            : '';
+                        meta.textContent = label(v) + useLine + (v.validTo ? (' · HSD: ' + formatExp(v.validTo)) : '');
+                        text.appendChild(t);
+                        text.appendChild(meta);
+                        a.appendChild(text);
+                        li.appendChild(a);
+                        listEl.appendChild(li);
+                    });
+                    setBadge(unreadCount(items));
+                }
+
+                fetch('/api/my-vouchers/available')
+                    .then(function (r) { return r.ok ? r.json() : []; })
+                    .then(function (data) { render(Array.isArray(data) ? data : []); })
+                    .catch(function () { render([]); });
+            })();
+        </script>
+    </th:block>
+</body>
+</html>

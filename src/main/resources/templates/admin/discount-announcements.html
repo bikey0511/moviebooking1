@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{staff/fragments/staff-layout :: layout('Thông báo mã giảm giá', 'discount-announcements', ~{::main-content}, ~{::page-scripts})}">
+<body>
+<th:block th:fragment="main-content">
+    <div class="container-fluid py-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+            <div>
+                <h1 class="fs-3 mb-1">Thông báo khuyến mãi</h1>
+                <p class="mb-0 text-secondary">Đăng bài kèm ảnh — thời đăng = thời máy chủ, tự ẩn khi hết hạn.</p>
+            </div>
+            <a th:href="@{/staff/discount-announcements/new}" class="btn btn-primary">
+                <i class="ti ti-plus me-1"></i>Đăng thông báo mới
+            </a>
+        </div>
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+        <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+        <div class="card border-0 shadow-sm">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                    <tr>
+                        <th style="min-width:140px;">Ảnh</th>
+                        <th>Tiêu đề</th>
+                        <th>Đăng lúc</th>
+                        <th>Hết hạn</th>
+                        <th>Trạng thái</th>
+                        <th class="text-end">Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="a : ${announcements}">
+                        <td>
+                            <a th:if="${a.imageUrl != null}" th:href="@{/promo-announcement/{id}(id=${a.id})}" target="_blank" rel="noopener" class="d-inline-block">
+                                <img th:src="${a.imageUrl}" alt="" class="rounded border" width="132" height="88" style="width:132px;height:88px;object-fit:cover;" loading="lazy" decoding="async">
+                            </a>
+                            <span th:unless="${a.imageUrl != null}" class="text-secondary small">—</span>
+                        </td>
+                        <td>
+                            <strong th:text="${a.title}">Tiêu đề</strong>
+                            <div th:if="${a.description != null and !a.description.isEmpty()}" class="small text-secondary text-truncate" style="max-width:320px;" th:text="${a.description}"></div>
+                        </td>
+                        <td class="small" th:text="${#temporals.format(a.publishedAt, 'dd/MM/yyyy HH:mm')}">—</td>
+                        <td class="small" th:text="${#temporals.format(a.expiresAt, 'dd/MM/yyyy HH:mm')}">—</td>
+                        <td>
+                            <span class="badge text-bg-success" th:if="${serverNow != null and a.expiresAt.isAfter(serverNow)}">Đang hiển thị</span>
+                            <span class="badge text-bg-secondary" th:unless="${serverNow != null and a.expiresAt.isAfter(serverNow)}">Đã hết hạn</span>
+                        </td>
+                        <td class="text-end text-nowrap">
+                            <a th:href="@{/staff/discount-announcements/{id}/edit(id=${a.id})}" class="btn btn-sm btn-outline-primary me-1">Sửa</a>
+                            <form th:action="@{/staff/discount-announcements/{id}/delete(id=${a.id})}" method="post" class="d-inline" onsubmit="return confirm('Xóa thông báo này?');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(announcements)}">
+                        <td colspan="6" class="text-center text-secondary py-4">Chưa có thông báo nào.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</th:block>
+<th:block th:fragment="page-scripts"></th:block>
+</body>
+</html>

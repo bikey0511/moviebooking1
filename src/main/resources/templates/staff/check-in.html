@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{staff/fragments/staff-layout :: layout('Quét mã vé', 'check-in', ~{::main-content}, ~{::page-scripts})}">
+<head><title>Check-in</title></head>
+<body>
+<th:block th:fragment="main-content">
+
+    <!-- SUCCESS OVERLAY — hiện hình tròn xanh lớn khi check-in thành công -->
+    <div id="scanSuccessOverlay" class="scan-success-overlay" style="display:none;" aria-live="polite">
+        <div class="scan-success-circle">
+            <div class="scan-success-icon">
+                <svg viewBox="0 0 52 52" class="scan-checkmark-svg">
+                    <circle class="scan-checkmark-circle" cx="26" cy="26" r="24" fill="none"/>
+                    <path class="scan-checkmark-path" fill="none" d="M14 27 L22 35 L38 17"/>
+                </svg>
+            </div>
+            <div class="scan-success-text">Thành công!</div>
+        </div>
+    </div>
+
+    <div class="container-fluid" style="max-width: 560px;">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+            <div>
+                <h1 class="fs-3 mb-1">Quét mã vé vào rạp</h1>
+                <p class="mb-0 text-secondary">Nhập hoặc quét mã trên vé (PAID / đã xác nhận)</p>
+            </div>
+            <a th:href="@{/staff/dashboard}" class="btn btn-outline-secondary btn-sm">
+                <i class="ti ti-arrow-left me-1"></i>Trang nhân viên
+            </a>
+        </div>
+
+        <div th:if="${error}" class="alert alert-danger" role="alert">
+            <i class="ti ti-alert-circle me-2"></i><span th:text="${error}">Lỗi</span>
+        </div>
+        <div id="scanClientError" class="alert alert-danger" role="alert" style="display: none;">
+            <i class="ti ti-alert-circle me-2"></i><span id="scanClientErrorText"></span>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <form id="checkInForm" th:action="@{/staff/check-in}" method="post" class="mb-4">
+                    <label class="form-label" for="ticketCode">Mã vé</label>
+                    <input type="text" class="form-control form-control-lg mb-3" id="ticketCode" name="ticketCode"
+                           autocomplete="off" placeholder="VD: CINEMA-1730..." autofocus>
+                    <div class="d-flex flex-wrap gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="ti ti-check me-1"></i>Xác nhận check-in
+                        </button>
+                        <button type="button" class="btn btn-outline-primary" id="btnToggleScan">
+                            <i class="ti ti-camera me-1"></i><span id="scanBtnLabel">Bật camera quét QR</span>
+                        </button>
+                    </div>
+                </form>
+                <div id="qr-reader" class="mb-2 rounded overflow-hidden border" style="max-width: 100%; display: none;"></div>
+                <p class="small text-secondary mb-0">
+                    Quét QR xong hệ thống <strong>tự gửi check-in</strong>. Thành công sẽ hiện vòng tròn xanh lớn 2 giây rồi tự ẩn để nhận khách tiếp theo.
+                </p>
+            </div>
+        </div>
+    </div>
+</th:block>
+
+<th:block th:fragment="page-scripts">
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script>
+    (function () {
+        /* ---- Form AJAX submit để hiện overlay thành công mà không redirect ---- */
+        var form = document.getElementById('checkInForm');
+        if (form) {
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                var code = document.getElementById('ticketCode').value.trim();
+                if (!code) return;
+
+                var fd = new FormData(form);
+                fetch('/staff/check-in/api', {
+                    method: 'POST',
+                    body: new URLSearchParams(fd),
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    credentials: 'same-origin'
+                })
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    var errBox = document.getElementById('scanClientError');
+                    var errText = document.getElementById('scanClientErrorText');
+                    if (errBox) errBox.style.display = 'none';
+                    if (data && data.ok) {
+                        showSuccessOverlay();
+                        document.getElementById('ticketCode').value = '';
+                        document.getElementById('ticketCode').focus();
+                    } else {
+                        var msg = (data && data.message) ? data.message : 'Không thể check-in.';
+                        if (errBox && errText) {
+                            errText.textContent = msg;
+                            errBox.style.display = 'block';
+                        } else {
+                            alert(msg);
+                        }
+                    }
+                })
+                .catch(function () {
+                    alert('Lỗi kết nối. Vui lòng thử lại.');
+                });
+            });
+        }
+
+        /* ---- Success overlay animation ---- */
+        function showSuccessOverlay() {
+            var overlay = document.getElementById('scanSuccessOverlay');
+            if (!overlay) return;
+            overlay.style.display = 'flex';
+            // Trigger reflow to restart CSS animation
+            void overlay.offsetWidth;
+            overlay.classList.add('active');
+            setTimeout(function () {
+                overlay.classList.remove('active');
+                setTimeout(function () {
+                    overlay.style.display = 'none';
+                }, 500); // fade out
+            }, 2000); // show 2s
+        }
+
+        /* ---- QR scanner ---- */
+        var btn = document.getElementById('btnToggleScan');
+        var label = document.getElementById('scanBtnLabel');
+        var readerEl = document.getElementById('qr-reader');
+        var input = document.getElementById('ticketCode');
+        var html5QrCode = null;
+        var scanning = false;
+
+        btn.addEventListener('click', function () {
+            if (!window.Html5Qrcode) {
+                alert('Không tải được thư viện quét QR. Vui lòng kiểm tra kết nối mạng.');
+                return;
+            }
+            if (scanning) {
+                html5QrCode.stop().then(function () {
+                    html5QrCode.clear();
+                }).catch(function () {}).finally(function () {
+                    html5QrCode = null;
+                    scanning = false;
+                    readerEl.style.display = 'none';
+                    label.textContent = 'Bật camera quét QR';
+                });
+                return;
+            }
+            readerEl.style.display = 'block';
+            html5QrCode = new Html5Qrcode('qr-reader');
+            scanning = true;
+            label.textContent = 'Tắt camera';
+            html5QrCode.start(
+                { facingMode: 'environment' },
+                { fps: 8, qrbox: { width: 240, height: 240 } },
+                function (decodedText) {
+                    var code = (decodedText || '').trim();
+                    if (!code) return;
+                    input.value = code;
+                    html5QrCode.stop().then(function () {
+                        html5QrCode.clear();
+                    }).catch(function () {}).finally(function () {
+                        html5QrCode = null;
+                        scanning = false;
+                        readerEl.style.display = 'none';
+                        label.textContent = 'Bật camera quét QR';
+                        form.dispatchEvent(new Event('submit'));
+                    });
+                },
+                function () {}
+            ).catch(function (err) {
+                scanning = false;
+                readerEl.style.display = 'none';
+                label.textContent = 'Bật camera quét QR';
+                alert('Không mở được camera: ' + (err && err.message ? err.message : err));
+            });
+        });
+    })();
+    </script>
+
+    <style>
+    /* Fullscreen overlay */
+    .scan-success-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.4s ease;
+    }
+    .scan-success-overlay.active {
+        opacity: 1;
+    }
+
+    /* Vòng tròn chính */
+    .scan-success-circle {
+        width: 220px;
+        height: 220px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #00C951, #00A844);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 0 60px rgba(0, 201, 81, 0.6), 0 0 120px rgba(0, 201, 81, 0.25);
+        animation: circlePop 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        position: relative;
+    }
+
+    @keyframes circlePop {
+        0%   { transform: scale(0.3); opacity: 0; }
+        60%  { transform: scale(1.12); opacity: 1; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* Icon SVG checkmark */
+    .scan-checkmark-svg {
+        width: 90px;
+        height: 90px;
+    }
+    .scan-checkmark-circle {
+        stroke: rgba(255, 255, 255, 0.3);
+        stroke-width: 3;
+    }
+    .scan-checkmark-path {
+        stroke: white;
+        stroke-width: 4;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-dasharray: 40;
+        stroke-dashoffset: 40;
+        animation: drawCheck 0.5s ease 0.3s forwards;
+    }
+
+    @keyframes drawCheck {
+        to { stroke-dashoffset: 0; }
+    }
+
+    /* Chữ "Thành công!" */
+    .scan-success-text {
+        color: white;
+        font-size: 1.05rem;
+        font-weight: 700;
+        margin-top: 8px;
+        letter-spacing: 0.03em;
+        animation: fadeUpText 0.35s ease 0.6s both;
+    }
+
+    @keyframes fadeUpText {
+        from { opacity: 0; transform: translateY(10px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+    </style>
+</th:block>
+</body>
+</html>

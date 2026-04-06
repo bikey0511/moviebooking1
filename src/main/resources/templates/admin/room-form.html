@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{staff/fragments/staff-layout :: layout('Thêm / sửa phòng chiếu', 'rooms', ~{::main-content}, ~{::page-scripts})}">
+<head><title>Room form</title></head>
+<body>
+<th:block th:fragment="main-content">
+    <div class="container-fluid" style="max-width: 700px;">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+            <div>
+                <h1 class="fs-3 mb-1" th:text="${room.id == null ? 'Thêm phòng mới' : 'Sửa thông tin phòng'}">Form phòng</h1>
+                <p class="mb-0 text-secondary">Cấu hình tên và loại phòng chiếu</p>
+            </div>
+            <a th:href="@{/staff/rooms}" class="btn btn-outline-secondary">
+                <i class="ti ti-arrow-left me-1"></i>Quay lại
+            </a>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <div th:if="${success}" class="alert alert-success" role="alert">
+                    <i class="ti ti-check me-2"></i><span th:text="${success}"></span>
+                </div>
+                <form th:action="@{/staff/rooms/save}" method="post" th:object="${room}">
+                    <input type="hidden" th:field="*{id}">
+                    <input type="hidden" th:if="${room.id != null}" th:field="*{totalSeats}">
+                    <div class="mb-3">
+                        <label class="form-label">Tên phòng</label>
+                        <input type="text" class="form-control" th:field="*{name}" placeholder="VD: Phòng 1, Phòng VIP" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Loại phòng</label>
+                        <select class="form-select" th:field="*{roomType}" id="roomType">
+                            <option value="">— Chọn loại —</option>
+                            <option value="NORMAL">Phòng thường – 120 chỗ (5 ghế đôi hàng đầu, còn lại ghế thường)</option>
+                            <option value="VIP">Phòng VIP – 40 ghế nằm</option>
+                        </select>
+                        <small class="text-secondary d-block mt-1">Chỉ áp dụng khi thêm phòng mới. Phòng thường: 120 chỗ; VIP: 40 ghế nằm.</small>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="ti ti-device-floppy me-1"></i>Lưu
+                        </button>
+                        <a th:href="@{/staff/rooms}" class="btn btn-outline-secondary">Hủy</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</th:block>
+<th:block th:fragment="page-scripts"></th:block>
+</body>
+</html>

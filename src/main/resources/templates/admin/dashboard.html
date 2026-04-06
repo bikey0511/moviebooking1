@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{admin/fragments/admin-layout :: layout('Trang quản trị', 'dashboard', ~{::main-content}, ~{::page-scripts})}">
+<head><title>Dashboard</title></head>
+<body>
+<th:block th:fragment="main-content">
+    <div class="container-fluid">
+        <div class="row mb-4">
+            <div class="col-12">
+                <h1 class="fs-3 mb-1">Trang quản trị</h1>
+                <p class="mb-0 text-secondary">Tổng quan rạp chiếu phim</p>
+            </div>
+        </div>
+
+        <!-- THỐNG KÊ HÔM NAY -->
+        <div class="row g-3 mb-4">
+            <div class="col-12">
+                <h5 class="text-muted mb-3"><i class="ti ti-calendar-event me-1"></i> Hôm nay</h5>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="admin-stat-card" style="border-left: 4px solid #00C951;">
+                    <div class="admin-stat-icon mb-2"><i class="ti ti-ticket"></i></div>
+                    <div class="admin-stat-value" th:text="${todayBookings}">0</div>
+                    <div class="admin-stat-label">Đơn hàng hôm nay</div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="admin-stat-card" style="border-left: 4px solid #E66239;">
+                    <div class="admin-stat-icon mb-2"><i class="ti ti-currency-dollar"></i></div>
+                    <div class="admin-stat-value">
+                        <span th:text="${#numbers.formatDecimal(todayRevenue, 1, 'COMMA', 0, 'POINT')}">0</span>
+                        <span class="fs-6 fw-normal text-secondary">VNĐ</span>
+                    </div>
+                    <div class="admin-stat-label">Doanh thu hôm nay</div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="admin-stat-card" style="border-left: 4px solid #00BFFF;">
+                    <div class="admin-stat-icon mb-2"><i class="ti ti-user-check"></i></div>
+                    <div class="admin-stat-value" th:text="${todayCheckedIn}">0</div>
+                    <div class="admin-stat-label">Vé đã check-in hôm nay</div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="admin-stat-card" style="border-left: 4px solid #F0B100;">
+                    <div class="admin-stat-icon mb-2"><i class="ti ti-hourglass"></i></div>
+                    <div class="admin-stat-value" th:text="${pendingBookings}">0</div>
+                    <div class="admin-stat-label">Đơn chờ xác nhận</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TỔNG QUAN -->
+        <div class="row g-3 mb-4">
+            <div class="col-12">
+                <h5 class="text-muted mb-3"><i class="ti ti-chart-bar me-1"></i> Tổng quan</h5>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="admin-stat-card">
+                    <div class="admin-stat-icon mb-2"><i class="ti ti-movie"></i></div>
+                    <div class="admin-stat-value" th:text="${totalMovies}">0</div>
+                    <div class="admin-stat-label">Tổng số phim</div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="admin-stat-card">
+                    <div class="admin-stat-icon mb-2"><i class="ti ti-ticket"></i></div>
+                    <div class="admin-stat-value" th:text="${totalBookings}">0</div>
+                    <div class="admin-stat-label">Tổng số đặt vé</div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="admin-stat-card">
+                    <div class="admin-stat-icon mb-2"><i class="ti ti-users"></i></div>
+                    <div class="admin-stat-value" th:text="${totalUsers}">0</div>
+                    <div class="admin-stat-label">Tổng số người dùng</div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="admin-stat-card">
+                    <div class="admin-stat-icon mb-2"><i class="ti ti-currency-dollar"></i></div>
+                    <div class="admin-stat-value">
+                        <span th:text="${#numbers.formatDecimal(totalRevenue, 1, 'COMMA', 0, 'POINT')}">0</span>
+                        <span class="fs-6 fw-normal text-secondary">VNĐ</span>
+                    </div>
+                    <div class="admin-stat-label">Tổng doanh thu</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-lg-8">
+                <div class="admin-chart-card">
+                    <h2 class="h5 mb-3"><i class="ti ti-chart-line me-2"></i>Doanh thu theo tháng</h2>
+                    <canvas id="revenueChart" height="280"></canvas>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="admin-chart-card">
+                    <h2 class="h5 mb-3"><i class="ti ti-chart-donut me-2"></i>Trạng thái đặt vé</h2>
+                    <canvas id="bookingStatusChart" height="260"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- NHÂN VIÊN & ĐƠN HÀNG GẦN ĐÂY -->
+        <div class="row g-3">
+            <!-- Staff List -->
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <h2 class="h5 mb-3"><i class="ti ti-users me-2"></i>Nhân viên</h2>
+                        <div class="list-group list-group-flush">
+                            <div class="list-group-item px-0 d-flex justify-content-between align-items-center"
+                                 th:each="staff : ${staffList}">
+                                <div>
+                                    <span class="fw-semibold" th:text="${staff.username}">staff1</span>
+                                    <span class="badge ms-2"
+                                          th:classappend="${staff.role == 'ADMIN'} ? 'bg-danger' : 'bg-primary'"
+                                          th:text="${staff.role}">STAFF</span>
+                                </div>
+                                <span class="badge"
+                                      th:classappend="${staff.enabled} ? 'bg-success' : 'bg-secondary'"
+                                      th:text="${staff.enabled} ? 'Hoạt động' : 'Tắt'">Active</span>
+                            </div>
+                            <div class="list-group-item px-0 text-center text-secondary py-3"
+                                 th:if="${#lists.isEmpty(staffList)}">
+                                Chưa có nhân viên
+                            </div>
+                        </div>
+                        <a th:href="@{/admin/users}" class="btn btn-sm btn-outline-primary mt-3 w-100">
+                            <i class="ti ti-settings me-1"></i> Quản lý nhân viên
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Đơn hàng gần đây -->
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <h2 class="h5 mb-0"><i class="ti ti-list me-2"></i>Đơn hàng gần đây</h2>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Người dùng</th>
+                                    <th>Phim</th>
+                                    <th>Suất chiếu</th>
+                                    <th>Tổng thanh toán</th>
+                                    <th>Trạng thái</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="booking : ${recentBookings}">
+                                    <td th:text="${booking.id}">1</td>
+                                    <td th:text="${booking.user != null ? booking.user.username : 'N/A'}">user</td>
+                                    <td th:text="${booking.showtime != null and booking.showtime.movie != null ? booking.showtime.movie.title : 'N/A'}">Movie</td>
+                                    <td th:text="${booking.showtime != null ? #temporals.format(booking.showtime.startTime, 'dd/MM HH:mm') : 'N/A'}">2024-01-01</td>
+                                    <td><span th:text="${#numbers.formatDecimal(totalPaymentMap != null and totalPaymentMap[booking.id] != null ? totalPaymentMap[booking.id] : booking.totalPrice, 1, 'COMMA', 0, 'POINT')}">0</span> VNĐ</td>
+                                    <td>
+                                        <span class="badge rounded-pill"
+                                              th:classappend="${booking.status == 'PAID' || booking.status == 'CONFIRMED'} ? 'bg-success' : (${booking.status == 'PENDING'} ? 'bg-warning' : 'bg-danger')"
+                                              th:text="${booking.status == 'PAID' || booking.status == 'CONFIRMED'} ? 'Đã thanh toán' : (${booking.status == 'PENDING'} ? 'Chờ xác nhận' : 'Đã hủy')">PAID</span>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(recentBookings)}">
+                                    <td colspan="6" class="text-center text-secondary py-4">Chưa có đặt vé nào</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</th:block>
+<th:block th:fragment="page-scripts">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script th:inline="javascript">
+        const chartText = '#495057';
+        const chartGrid = '#e9ecef';
+        const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+        const months = ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'];
+        const revenueValues = [];
+        const monthlyData = /*[[${monthlyRevenue}]]*/ null;
+        for (let i = 1; i <= 12; i++) {
+            revenueValues.push(monthlyData && monthlyData[i] ? monthlyData[i] : 0);
+        }
+        new Chart(revenueCtx, {
+            type: 'line',
+            data: {
+                labels: months,
+                datasets: [{
+                    label: 'Doanh thu (VNĐ)',
+                    data: revenueValues,
+                    borderColor: '#E66239',
+                    backgroundColor: 'rgba(230, 98, 57, 0.12)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { labels: { color: chartText } }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { color: chartText },
+                        grid: { color: chartGrid }
+                    },
+                    x: {
+                        ticks: { color: chartText },
+                        grid: { color: chartGrid }
+                    }
+                }
+            }
+        });
+        const statusCtx = document.getElementById('bookingStatusChart').getContext('2d');
+        const paidBookings = /*[[${paidBookings}]]*/ 0;
+        const pendingBookings = /*[[${pendingBookings}]]*/ 0;
+        const cancelledBookings = /*[[${cancelledBookings}]]*/ 0;
+        new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Đã thanh toán', 'Chờ xác nhận', 'Đã hủy'],
+                datasets: [{
+                    data: [paidBookings, pendingBookings, cancelledBookings],
+                    backgroundColor: ['#00C951', '#F0B100', '#FB2C36']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: chartText }
+                    }
+                }
+            }
+        });
+    </script>
+</th:block>
+</body>
+</html>

@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh Sách Phim - Đặt Vé Xem Phim</title>
+    <th:block th:replace="~{fragments/user-head :: userStyles}"></th:block>
+    <style>
+        /* Movies page specific styles */
+        .page-header {
+            background: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.55)), url('/images/hero-bg.jpg') no-repeat;
+            background-size: cover;
+            background-position: center;
+            padding: 140px 0 56px;
+            text-align: center;
+        }
+        
+        .page-header h1 {
+            margin-bottom: 15px;
+        }
+        
+        .page-header p {
+            color: var(--gainsboro);
+            font-size: var(--fs-9);
+        }
+        #danh-gia-phim {
+            scroll-margin-top: 120px;
+        }
+        .review-guide-box {
+            background: rgba(244, 208, 63, 0.08);
+            border: 1px solid rgba(244, 208, 63, 0.35);
+            border-radius: 16px;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 1.75rem;
+        }
+        .review-guide-box h2 {
+            color: var(--citrine);
+            font-size: var(--fs-5);
+            margin: 0 0 0.5rem 0;
+        }
+        .review-guide-box p {
+            color: var(--gainsboro);
+            margin: 0;
+            font-size: var(--fs-9);
+            line-height: 1.5;
+        }
+        .rate-film-btn {
+            font-size: 11px;
+            padding: 4px 10px;
+            margin-top: 8px;
+            border-radius: 8px;
+            border: 1px solid rgba(244, 208, 63, 0.6);
+            color: var(--citrine);
+            background: transparent;
+            cursor: pointer;
+        }
+        .rate-film-btn:hover {
+            background: rgba(244, 208, 63, 0.15);
+        }
+    </style>
+</head>
+<body id="top">
+
+    <th:block th:replace="~{fragments/user-layout :: userHeader}"></th:block>
+
+    <main>
+        <article>
+            <!-- PAGE HEADER -->
+            <section class="page-header">
+                <div class="container">
+                    <h1 class="h1">Danh Sách Phim</h1>
+                    <p>Khám phá bộ sưu tập phim đa dạng tại CINEMA</p>
+                </div>
+            </section>
+
+            <!-- MOVIES SECTION -->
+            <section class="section section-alt">
+                <div class="container">
+                    <div id="danh-gia-phim" class="review-guide-box" th:if="${currentStatus == 'now-showing'}">
+                        <h2>Đánh giá phim</h2>
+                        <p>Chọn một phim <strong>đang chiếu</strong> bên dưới, bấm <strong>Đánh giá phim</strong> trên thẻ phim để mở form sao &amp; bình luận (hoặc vào trang phim rồi kéo xuống mục đánh giá).</p>
+                    </div>
+                    <!-- Filter Tabs -->
+                    <ul class="filter-list">
+                        <li>
+                            <a th:href="@{/movies}" 
+                               class="filter-btn" 
+                               th:classappend="${currentStatus == 'now-showing' or currentStatus == null} ? 'active'">
+                                Đang Chiếu
+                            </a>
+                        </li>
+                        <li>
+                            <a th:href="@{/movies(status='coming-soon')}" 
+                               class="filter-btn"
+                               th:classappend="${currentStatus == 'coming-soon'} ? 'active'">
+                                Sắp Chiếu
+                            </a>
+                        </li>
+                    </ul>
+
+                    <!-- Movies Grid -->
+                    <ul class="movies-grid">
+                        <li th:each="movie, iterStat : ${movies.content}">
+                            <div class="movie-card" th:onclick="|location.href='/movie/${movie.id}'|">
+                                <figure class="card-banner">
+                                    <img th:src="${movie.posterUrl != null} ? ${movie.posterUrl} : '/images/no-poster.jpg'" 
+                                         th:alt="${movie.title}">
+                                    <div class="play-overlay">
+                                        <ion-icon name="play-circle"></ion-icon>
+                                    </div>
+                                    <span th:if="${movie.status == 'NOW_SHOWING'}" 
+                                          class="badge badge-primary" 
+                                          style="position:absolute;top:10px;right:10px;z-index:2;">
+                                        <ion-icon name="flame"></ion-icon> Hot
+                                    </span>
+                                    <span th:if="${movie.status == 'COMING_SOON'}" 
+                                          class="badge badge-warning" 
+                                          style="position:absolute;top:10px;right:10px;z-index:2;">
+                                        <ion-icon name="calendar"></ion-icon>
+                                        <span th:text="${#temporals.format(movie.releaseDate, 'dd/MM')}">01/01</span>
+                                    </span>
+                                </figure>
+                                <div class="card-content">
+                                    <h3 class="card-title" th:text="${movie.title}">Tên Phim</h3>
+                                    <div class="card-meta">
+                                        <span>
+                                            <ion-icon name="time-outline"></ion-icon>
+                                            <span th:text="${movie.duration}">120</span> min
+                                        </span>
+                                        <span th:if="${movie.status == 'NOW_SHOWING'}" class="rating">
+                                            <ion-icon name="star"></ion-icon>
+                                            <span th:text="${movie.releaseDate != null ? #temporals.format(movie.releaseDate, 'yyyy') : '2024'}">2024</span>
+                                        </span>
+                                        <span th:if="${movie.status == 'COMING_SOON'}" class="rating">
+                                            <ion-icon name="calendar-outline"></ion-icon>
+                                            <span th:text="${#temporals.format(movie.releaseDate, 'dd/MM/yyyy')}">01/01/2024</span>
+                                        </span>
+                                    </div>
+                                    <button type="button" class="rate-film-btn" th:if="${movie.status.name() == 'NOW_SHOWING'}"
+                                            th:data-href="@{/movie/{id}(id=${movie.id})}"
+                                            onclick="event.stopPropagation(); location.href=this.dataset.href + '#reviews';">
+                                        Đánh giá phim
+                                    </button>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+
+                    <!-- Empty State -->
+                    <div class="text-center mt-5" th:if="${#lists.isEmpty(movies.content)}">
+                        <ion-icon name="film-outline" style="font-size: 80px; color: var(--gray-x); margin-bottom: 20px;"></ion-icon>
+                        <h3 style="color: var(--gainsboro); margin-bottom: 10px;">Không có phim nào</h3>
+                        <p style="color: var(--gray-x);">Vui lòng quay lại sau</p>
+                    </div>
+
+                    <!-- Pagination -->
+                    <nav th:if="${movies.totalPages > 1}" class="pagination">
+                        <a class="page-link" 
+                           th:href="@{/movies(page=0, status=${currentStatus})}"
+                           th:if="${!movies.first}">
+                            <ion-icon name="chevron-back"></ion-icon>
+                        </a>
+                        <th:block th:each="i : ${#numbers.sequence(0, movies.totalPages - 1)}">
+                            <a class="page-link" 
+                               th:href="@{/movies(page=${i}, status=${currentStatus})}"
+                               th:classappend="${i == movies.number} ? 'active' : ''"
+                               th:text="${i + 1}">1</a>
+                        </th:block>
+                        <a class="page-link" 
+                           th:href="@{/movies(page=${movies.number + 1}, status=${currentStatus})}"
+                           th:if="${!movies.last}">
+                            <ion-icon name="chevron-forward"></ion-icon>
+                        </a>
+                    </nav>
+                </div>
+            </section>
+        </article>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-brand-wrapper">
+                <a th:href="@{/}" class="logo">
+                    <ion-icon name="film"></ion-icon>
+                    <span>CINEMA</span>
+                </a>
+            </div>
+            
+            <ul class="footer-list">
+                <li><a th:href="@{/}" class="footer-link">Trang Chủ</a></li>
+                <li><a th:href="@{/movies}" class="footer-link">Phim</a></li>
+                <li><a th:href="@{/auth/login}" class="footer-link">Đăng Nhập</a></li>
+                <li><a th:href="@{/auth/register}" class="footer-link">Đăng Ký</a></li>
+            </ul>
+            
+            <div class="divider"></div>
+            
+            <ul class="social-list">
+                <li><a href="#" class="social-link"><ion-icon name="logo-facebook"></ion-icon></a></li>
+                <li><a href="#" class="social-link"><ion-icon name="logo-twitter"></ion-icon></a></li>
+                <li><a href="#" class="social-link"><ion-icon name="logo-instagram"></ion-icon></a></li>
+                <li><a href="#" class="social-link"><ion-icon name="logo-youtube"></ion-icon></a></li>
+            </ul>
+            
+            <div class="footer-bottom">
+                <p class="copyright">
+                    &copy; 2026 <a href="#">CINEMA</a>. All Rights Reserved
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- GO TO TOP -->
+    <a href="#top" class="go-top" data-go-top>
+        <ion-icon name="chevron-up"></ion-icon>
+    </a>
+
+    <th:block th:replace="~{fragments/user-layout :: commonScripts}"></th:block>
+    <script>
+        /* Hiển thị thẻ phim ngay; trước đây opacity:0 + observer khiến lưới có thể “mất” nếu observer không kích hoạt */
+        document.querySelectorAll('.movie-card').forEach(function (card) {
+            card.style.opacity = '1';
+            card.style.transform = 'none';
+        });
+    </script>
+</body>
+</html>

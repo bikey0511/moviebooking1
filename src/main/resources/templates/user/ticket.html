@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vé Xem Phim - CINEMA</title>
+    <th:block th:replace="~{fragments/user-head :: userStyles}"></th:block>
+    <style>
+        .ticket-page {
+            padding: 140px 0 60px;
+            min-height: 100vh;
+        }
+
+        .ticket-card {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 25px;
+            overflow: hidden;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.6);
+            max-width: 550px;
+            margin-inline: auto;
+            animation: fadeInUp 0.8s ease forwards;
+        }
+
+        .ticket-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #b20710 100%);
+            padding: 35px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ticket-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .ticket-header h2 {
+            font-size: 28px;
+            margin-bottom: 5px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .ticket-header p {
+            margin: 0;
+            opacity: 0.9;
+            font-size: var(--fs-11);
+            position: relative;
+            z-index: 1;
+        }
+
+        .ticket-body {
+            padding: 35px;
+        }
+
+        .movie-poster-large {
+            width: 140px;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 15px;
+            margin-inline: auto;
+            margin-bottom: 25px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+            display: block;
+        }
+
+        .movie-title-large {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 8px;
+            color: var(--white);
+        }
+
+        .movie-meta-info {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .ticket-details {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 25px 0;
+        }
+
+        .detail-item {
+            text-align: center;
+            padding: 18px 12px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            transition: var(--transition-2);
+        }
+
+        .detail-item:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateY(-3px);
+        }
+
+        .detail-label {
+            font-size: 11px;
+            color: var(--gainsboro);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .detail-label ion-icon {
+            color: var(--citrine);
+        }
+
+        .detail-value {
+            font-size: 16px;
+            font-weight: var(--fw-700);
+            color: var(--citrine);
+        }
+
+        .seats-section {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            margin: 25px 0;
+        }
+
+        .seats-section .detail-label {
+            margin-bottom: 12px;
+        }
+
+        .seat-badge {
+            display: inline-block;
+            background: var(--primary-color);
+            padding: 8px 18px;
+            border-radius: 25px;
+            font-weight: bold;
+            margin: 4px;
+            animation: scaleIn 0.3s ease forwards;
+        }
+
+        .qr-section {
+            text-align: center;
+            padding: 30px;
+            background: #fff;
+            border-radius: 15px;
+            margin: 25px 0;
+        }
+
+        .qr-code {
+            width: 180px;
+            height: 180px;
+            margin-inline: auto;
+            border-radius: 10px;
+        }
+
+        .ticket-code {
+            font-size: 20px;
+            font-weight: var(--fw-700);
+            color: var(--black);
+            margin-top: 15px;
+            letter-spacing: 2px;
+        }
+
+        .ticket-footer {
+            text-align: center;
+            padding: 25px;
+            border-top: 2px dashed rgba(255,255,255,0.2);
+            color: var(--gainsboro);
+            font-size: var(--fs-11);
+        }
+
+        .ticket-footer p {
+            margin: 5px 0;
+            word-spacing: 0.15em;
+            line-height: 1.55;
+        }
+        .ticket-price-line {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            justify-content: center;
+            gap: 0.35em 0.75em;
+            margin-bottom: 0.65rem;
+        }
+        .ticket-price-line .detail-label {
+            margin-bottom: 0;
+            margin-right: 0.15em;
+        }
+        .ticket-price-line .detail-label::after {
+            content: ':';
+            margin-left: 0.2em;
+        }
+
+        .ticket-footer ion-icon {
+            color: var(--citrine);
+            margin-right: 5px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .action-buttons .btn {
+            flex: 1;
+            max-width: 200px;
+            justify-content: center;
+        }
+
+        .ticket-card.ticket-used {
+            opacity: 1;
+            filter: none;
+            box-shadow: 0 0 0 2px rgba(229, 9, 20, 0.55), 0 25px 80px rgba(0,0,0,0.6);
+        }
+        .ticket-used-banner {
+            text-align: center;
+            padding: 14px 18px;
+            margin: 0 0 20px 0;
+            border-radius: 12px;
+            background: rgba(229, 9, 20, 0.2);
+            border: 1px solid rgba(229, 9, 20, 0.55);
+            color: #ffb3b8;
+            font-weight: 600;
+            word-spacing: 0.12em;
+        }
+        .qr-section.ticket-used-qr {
+            position: relative;
+            background: #e9ecef;
+        }
+        .qr-section.ticket-used-qr::after {
+            content: 'Đã sử dụng';
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(229, 9, 20, 0.88);
+            color: #fff;
+            font-weight: 800;
+            font-size: 1.1rem;
+            letter-spacing: 0.08em;
+            word-spacing: 0.15em;
+            border-radius: 15px;
+        }
+        .qr-section.ticket-used-qr img,
+        .qr-section.ticket-used-qr .ticket-code {
+            opacity: 0.35;
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+            .no-print, .header, .footer, .action-buttons {
+                display: none !important;
+            }
+            .ticket-card {
+                box-shadow: none;
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body id="top" class="no-print">
+
+    <th:block th:replace="~{fragments/user-layout :: userHeader}"></th:block>
+
+    <main>
+        <article>
+            <section class="ticket-page">
+                <div class="container">
+                    <div class="ticket-card" th:classappend="${booking.checkedInAt != null} ? ' ticket-used'">
+                        <div class="ticket-header">
+                            <h2><ion-icon name="ticket" style="margin-right: 10px;"></ion-icon>VÉ XEM PHIM</h2>
+                            <p>Cinema Ticket Booking</p>
+                        </div>
+                        
+                        <div class="ticket-body">
+                            <div th:if="${booking.checkedInAt != null}" class="ticket-used-banner">
+                                <ion-icon name="checkmark-done-outline"></ion-icon>
+                                Vé đã được sử dụng — quét vào rạp lúc
+                                <span th:text="${#temporals.format(booking.checkedInAt, 'dd/MM/yyyy HH:mm')}">—</span>
+                            </div>
+                            <!-- Movie Info -->
+                            <div class="text-center">
+                                <img th:src="${booking.showtime.movie.posterUrl != null ? booking.showtime.movie.posterUrl : '/images/no-poster.jpg'}" 
+                                     class="movie-poster-large" alt="Poster Phim">
+                                <h3 class="movie-title-large" th:text="${booking.showtime.movie.title}">Tên Phim</h3>
+                                <div class="movie-meta-info">
+                                    <span class="badge badge-outline">
+                                        <ion-icon name="time-outline" style="margin-right: 5px;"></ion-icon>
+                                        <span th:text="${booking.showtime.movie.duration + ' phút'}">120 phút</span>
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <!-- Ticket Details -->
+                            <div class="ticket-details">
+                                <div class="detail-item">
+                                    <div class="detail-label">
+                                        <ion-icon name="calendar-outline"></ion-icon>
+                                        Ngày chiếu
+                                    </div>
+                                    <div class="detail-value" th:text="${#temporals.format(booking.showtime.startTime, 'dd/MM/yyyy')}">01/01/2024</div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-label">
+                                        <ion-icon name="time-outline"></ion-icon>
+                                        Giờ chiếu
+                                    </div>
+                                    <div class="detail-value" th:text="${#temporals.format(booking.showtime.startTime, 'HH:mm')}">18:00</div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-label">
+                                        <ion-icon name="location-outline"></ion-icon>
+                                        Phòng
+                                    </div>
+                                    <div class="detail-value" th:text="${booking.showtime.room.name}">Phòng 1</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Seats -->
+                            <div class="seats-section">
+                                <div class="detail-label">
+                                    <ion-icon name="chair"></ion-icon>
+                                    Ghế ngồi
+                                </div>
+                                <div>
+                                    <span th:each="seat : ${booking.bookingSeats}" class="seat-badge" 
+                                          th:text="${seat.seat.rowName + seat.seat.seatNumber}">A1</span>
+                                </div>
+                            </div>
+                            
+                            <!-- QR Code -->
+                            <div class="qr-section" th:classappend="${booking.checkedInAt != null} ? ' ticket-used-qr'">
+                                <img th:src="@{'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + ${booking.ticketCode}}" 
+                                     class="qr-code" alt="QR Code">
+                                <div class="ticket-code" th:text="${booking.ticketCode}">CINEMA-123456</div>
+                                <p style="color: #666; margin: 10px 0 0 0; font-size: 12px;"
+                                   th:text="${booking.checkedInAt != null} ? 'Mã vé đã quét — không dùng lại được' : 'Quét mã để vào rạp'">Quét mã để vào rạp</p>
+                            </div>
+                            
+                            <!-- Price Summary -->
+                            <div style="background: rgba(255,255,255,0.05); border-radius: 15px; padding: 20px; margin: 25px 0;">
+                                <div class="ticket-price-line">
+                                    <span class="detail-label">Tiền vé</span>
+                                    <span class="detail-value" style="font-size: 18px;">
+                                        <span th:text="${#numbers.formatDecimal(booking.totalPrice != null ? booking.totalPrice : 0, 1, 'COMMA', 0, 'POINT')}">160.000</span> VNĐ
+                                    </span>
+                                </div>
+                                <div class="ticket-price-line" th:if="${booking.concessionTotal != null and booking.concessionTotal.compareTo(0) > 0}">
+                                    <span class="detail-label">Bắp nước</span>
+                                    <span class="detail-value" style="font-size: 18px;">
+                                        + <span th:text="${#numbers.formatDecimal(booking.concessionTotal, 1, 'COMMA', 0, 'POINT')}">70.000</span> VNĐ
+                                    </span>
+                                </div>
+                                <div class="ticket-price-line" th:if="${booking.discountAmount != null and booking.discountAmount.compareTo(T(java.math.BigDecimal).ZERO) > 0}">
+                                    <span class="detail-label">Giảm giá</span>
+                                    <span style="font-size: 18px; color: #28a745; font-weight: bold;">
+                                        − <span th:text="${#numbers.formatDecimal(booking.discountAmount, 1, 'COMMA', 0, 'POINT')}">20.000</span> VNĐ
+                                    </span>
+                                </div>
+                                <hr style="border-color: rgba(255,255,255,0.2); margin: 15px 0;">
+                                <div class="text-center">
+                                    <div class="ticket-price-line justify-content-center">
+                                        <span class="detail-label">Tổng thanh toán</span>
+                                        <span style="font-size: 32px; font-weight: bold; color: var(--primary-color);">
+                                            <span th:text="${#numbers.formatDecimal(totalPayment, 1, 'COMMA', 0, 'POINT')}">230.000</span> VNĐ
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="ticket-footer">
+                            <p>
+                                <ion-icon name="information-circle"></ion-icon>
+                                Vui lòng đến trước giờ chiếu 15 phút
+                            </p>
+                            <p>
+                                <ion-icon name="mail"></ion-icon>
+                                Mang theo email xác nhận hoặc mã vé này
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="action-buttons no-print">
+                        <button onclick="window.print()" class="btn btn-primary">
+                            <ion-icon name="print"></ion-icon>
+                            In vé
+                        </button>
+                        <a th:href="@{/user/bookings}" class="btn btn-outline">
+                            <ion-icon name="arrow-back"></ion-icon>
+                            Quay lại
+                        </a>
+                    </div>
+                </div>
+            </section>
+        </article>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="footer no-print">
+        <div class="container">
+            <div class="footer-brand-wrapper">
+                <a th:href="@{/}" class="logo">
+                    <ion-icon name="film"></ion-icon>
+                    <span>CINEMA</span>
+                </a>
+            </div>
+            
+            <div class="footer-bottom">
+                <p class="copyright">
+                    &copy; 2026 <a href="#">CINEMA</a>. All Rights Reserved
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- GO TO TOP -->
+    <a href="#top" class="go-top" data-go-top>
+        <ion-icon name="chevron-up"></ion-icon>
+    </a>
+
+    <th:block th:replace="~{fragments/user-layout :: commonScripts}"></th:block>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{staff/fragments/staff-layout :: layout('Thông tin cá nhân', 'profile', ~{::main-content}, ~{::page-scripts})}">
+<head><title>Thông tin cá nhân</title></head>
+<body>
+<th:block th:fragment="main-content">
+    <div class="container-fluid" style="max-width: 560px;">
+        <h1 class="fs-3 mb-4">Thông tin cá nhân (nhân viên)</h1>
+
+        <div th:if="${success}" class="alert alert-success" role="alert">
+            <i class="ti ti-check me-2"></i>Đã cập nhật thông tin thành công.
+        </div>
+        <div th:if="${error}" class="alert alert-danger" role="alert">
+            <i class="ti ti-alert-circle me-2"></i><span th:text="${error}">Lỗi</span>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <p class="text-secondary small mb-4">Tài khoản đang đăng nhập tại khu vực nhân viên / quét vé.</p>
+                <form th:action="@{/staff/profile}" method="post">
+                    <div class="mb-3">
+                        <label class="form-label" for="username">Tên đăng nhập</label>
+                        <input type="text" class="form-control" id="username" th:value="${user.username}" disabled readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="email">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" th:value="${user.email}" placeholder="email@example.com">
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label" for="phone">Số điện thoại</label>
+                        <input type="tel" class="form-control" id="phone" name="phone" th:value="${user.phone}" placeholder="0912345678">
+                    </div>
+                    <div class="d-flex flex-wrap gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="ti ti-device-floppy me-1"></i>Lưu thay đổi
+                        </button>
+                        <a th:href="@{/staff/dashboard}" class="btn btn-outline-secondary">
+                            <i class="ti ti-arrow-left me-1"></i>Trang nhân viên
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</th:block>
+<th:block th:fragment="page-scripts"></th:block>
+</body>
+</html>

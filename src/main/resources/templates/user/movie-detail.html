@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi Tiết Phim - CINEMA</title>
+    <th:block th:replace="~{fragments/user-head :: userStyles}"></th:block>
+    <style>
+        /* Movie detail specific styles */
+        .movie-detail-section {
+            padding-top: 120px;
+            padding-bottom: 60px;
+            position: relative;
+            min-height: 100vh;
+        }
+
+        .movie-detail-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 400px;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8), var(--eerie-black));
+            z-index: 0;
+        }
+
+        .trailer-section {
+            margin-top: 40px;
+        }
+
+        .trailer-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            padding-bottom: 56.25%;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            margin: 20px auto;
+        }
+
+        .trailer-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .btn-trailer {
+            background: var(--primary-color);
+            border: none;
+            padding: 15px 35px;
+            font-weight: bold;
+            border-radius: 50px;
+            color: white;
+            cursor: pointer;
+            transition: var(--transition-2);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-size: var(--fs-11);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-trailer:hover {
+            background: var(--citrine);
+            color: var(--xiketic);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(229, 9, 20, 0.4);
+        }
+
+        .showtime-section {
+            background: var(--gunmetal-1);
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
+        }
+
+        .showtime-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: var(--transition-2);
+            border: 2px solid transparent;
+        }
+
+        .showtime-card:hover {
+            background: rgba(229, 9, 20, 0.2);
+            border-color: var(--primary-color);
+            transform: translateY(-3px);
+        }
+
+        .showtime-time {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--white);
+        }
+
+        .showtime-price {
+            color: var(--citrine);
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .star-rating {
+            color: #ffc107;
+        }
+
+        .star-rating .far {
+            color: rgba(255,255,255,0.3);
+        }
+
+        .review-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: var(--transition-2);
+        }
+
+        .review-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--citrine);
+        }
+
+        .review-card .small {
+            color: rgba(255,255,255,0.6);
+        }
+
+        .rating-input {
+            display: flex;
+            gap: 5px;
+        }
+
+        .rating-input label {
+            font-size: 24px;
+            cursor: pointer;
+            color: rgba(255,255,255,0.3);
+            transition: var(--transition-1);
+        }
+
+        .rating-input label:hover,
+        .rating-input label:hover ~ label,
+        .rating-input input:checked ~ label {
+            color: #ffc107;
+        }
+
+        .rating-input input {
+            display: none;
+        }
+
+        .details-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .details-actions .btn {
+            flex: 1;
+            min-width: 150px;
+            justify-content: center;
+        }
+
+        .showtime-card-vip {
+            border: 2px solid #f4d03f !important;
+            background: linear-gradient(135deg, rgba(244, 208, 63, 0.22), rgba(244, 208, 63, 0.06)) !important;
+            box-shadow: 0 0 28px rgba(244, 208, 63, 0.35);
+            transform: scale(1.02);
+        }
+        .showtime-card-vip:hover {
+            transform: scale(1.04) translateY(-4px);
+            box-shadow: 0 0 36px rgba(244, 208, 63, 0.5);
+        }
+        .vip-room-badge {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            background: linear-gradient(90deg, #f4d03f, #f39c12);
+            color: #1a1a1a;
+        }
+    </style>
+</head>
+<body id="top">
+
+    <th:block th:replace="~{fragments/user-layout :: userHeader}"></th:block>
+
+    <main>
+        <article>
+            <!-- MOVIE DETAIL SECTION -->
+            <section class="movie-detail-section">
+                <div class="container">
+                    <div class="mb-4 animate-fadeInDown">
+                        <a th:href="@{/}" class="btn btn-outline btn-sm">
+                            <ion-icon name="arrow-back"></ion-icon>
+                            Quay về trang chủ
+                        </a>
+                    </div>
+
+                    <div class="row">
+                        <!-- Movie Poster -->
+                        <div class="col-lg-4 mb-4 animate-fadeInLeft">
+                            <div class="movie-detail-banner">
+                                <img th:src="${movie.posterUrl != null ? movie.posterUrl : '/images/no-poster.jpg'}" 
+                                     alt="Poster Phim">
+                                <button class="play-btn" th:if="${movie.trailerUrl != null and !movie.trailerUrl.isEmpty()}" 
+                                        onclick="loadTrailer()">
+                                    <ion-icon name="play-circle"></ion-icon>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Movie Info -->
+                        <div class="col-lg-8 movie-detail-content animate-fadeInRight">
+                            <p class="detail-subtitle" th:text="${movie.status == 'NOW_SHOWING' ? 'Đang Chiếu' : 'Sắp Chiếu'}">
+                                Đang Chiếu
+                            </p>
+                            <h1 class="h1 detail-title" th:text="${movie.title}">Tên Phim</h1>
+
+                            <div class="meta-wrapper">
+                                <div class="badge-wrapper">
+                                    <div class="badge badge-fill">PG 13</div>
+                                    <div class="badge badge-outline">HD</div>
+                                </div>
+                                <div class="date-time">
+                                    <div>
+                                        <ion-icon name="time-outline"></ion-icon>
+                                        <time datetime="PT128M"><span th:text="${movie.duration}">120</span> min</time>
+                                    </div>
+                                    <div>
+                                        <ion-icon name="calendar-outline"></ion-icon>
+                                        <time datetime="2024" th:text="${#temporals.format(movie.releaseDate, 'dd/MM/yyyy')}">01/01/2024</time>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <p class="storyline" th:text="${movie.description}">Mô tả phim...</p>
+
+                            <!-- Trailer Section -->
+                            <div class="trailer-section" th:if="${movie.trailerUrl != null and !movie.trailerUrl.isEmpty()}">
+                                <h3 style="margin-bottom: 15px;">
+                                    <ion-icon name="play-circle" style="color: var(--citrine);"></ion-icon>
+                                    Trailer
+                                </h3>
+                                <div class="trailer-container" id="trailerContainer">
+                                    <div class="d-flex align-items-center justify-content-center h-100" id="trailerPlaceholder">
+                                        <button class="btn-trailer" onclick="loadTrailer()">
+                                            <ion-icon name="play"></ion-icon>
+                                            Xem Trailer
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Showtimes -->
+                            <div class="showtime-section" sec:authorize="isAuthenticated()">
+                                <h3 style="margin-bottom: 20px;">
+                                    <ion-icon name="ticket" style="color: var(--citrine);"></ion-icon>
+                                    Suất chiếu theo ngày
+                                </h3>
+                                <p class="mb-3" style="color: var(--gainsboro); font-size: var(--fs-11);">
+                                    Chọn một trong 7 ngày tới (đồng bộ với lịch admin).
+                                </p>
+                                <div class="d-flex flex-wrap gap-2 mb-4">
+                                    <a th:each="d : ${weekDays}"
+                                       th:href="@{/movie/{id}(id=${movie.id}, date=${d})}"
+                                       class="btn btn-sm rounded-pill px-3"
+                                       th:classappend="${d.equals(selectedShowDate)} ? 'btn-primary' : 'btn-outline-light'">
+                                        <span class="d-block small text-uppercase" style="font-size:10px;opacity:.85;" th:text="${#temporals.format(d, 'EEE')}">T2</span>
+                                        <span class="fw-semibold" th:text="${#temporals.format(d, 'dd/MM')}">25/03</span>
+                                    </a>
+                                </div>
+                                <div th:if="${#lists.isEmpty(showtimes)}">
+                                    <p style="color: var(--gainsboro);">Không có suất chiếu cho ngày đã chọn.</p>
+                                </div>
+                                <a th:each="showtime : ${showtimes}"
+                                   th:href="@{/user/select-seats(showtimeId=${showtime.id})}"
+                                   class="showtime-card text-decoration-none text-reset d-block mb-3"
+                                   th:classappend="${showtime.room != null and showtime.room.roomType != null and showtime.room.roomType.name() == 'VIP'} ? 'showtime-card-vip' : ''">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-6">
+                                            <div class="showtime-time" th:text="${#temporals.format(showtime.startTime, 'HH:mm')}">18:00</div>
+                                            <div style="color: var(--gainsboro); margin-top: 5px;">
+                                                <ion-icon name="location-outline"></ion-icon>
+                                                <span th:text="${showtime.room.name}">Phòng 1</span>
+                                            </div>
+                                            <span th:if="${showtime.room != null and showtime.room.roomType != null and showtime.room.roomType.name() == 'VIP'}"
+                                                  class="vip-room-badge">VIP · 40 ghế nằm</span>
+                                        </div>
+                                        <div class="col-md-6 text-md-end">
+                                            <div class="showtime-price">
+                                                <span th:text="${#numbers.formatDecimal(showtime.price, 1, 'COMMA', 0, 'POINT')}">80.000</span> VNĐ
+                                            </div>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+
+                            <div class="showtime-section" sec:authorize="!isAuthenticated()">
+                                <p style="color: var(--gainsboro);">
+                                    Vui lòng <a th:href="@{/auth/login}" style="color: var(--citrine);">đăng nhập</a> để đặt vé
+                                </p>
+                            </div>
+
+                            <!-- Reviews Section -->
+                            <div class="showtime-section mt-4" id="reviews">
+                                <h3 style="margin-bottom: 20px;">
+                                    <ion-icon name="star" style="color: #ffc107;"></ion-icon>
+                                    Đánh giá & Bình luận
+                                </h3>
+                                
+                                <div class="d-flex align-items-center gap-3 mb-4">
+                                    <div class="star-rating">
+                                        <th:block th:with="avg=${avgRating != null ? avgRating : 0}">
+                                            <span th:each="i : ${#numbers.sequence(1, 5)}">
+                                                <ion-icon name="star" th:if="${i <= avg}"></ion-icon>
+                                                <ion-icon name="star-half" th:if="${i > avg and i - 0.5 <= avg}"></ion-icon>
+                                                <ion-icon name="star-outline" th:if="${i > avg and i - 0.5 > avg}"></ion-icon>
+                                            </span>
+                                        </th:block>
+                                    </div>
+                                    <span th:if="${avgRating != null}" th:text="|${avgRating} / 5 (${#lists.size(reviews)} đánh giá)|">4.5 / 5</span>
+                                    <span th:if="${avgRating == null}">Chưa có đánh giá</span>
+                                </div>
+
+                                <!-- Review Form -->
+                                <div th:if="${#authorization.expression('isAuthenticated()') and userReview != null}" class="alert mb-3" style="background: rgba(46, 204, 113, 0.15); border: 1px solid rgba(46, 204, 113, 0.45); color: #2ecc71; border-radius: 12px;">
+                                    <ion-icon name="checkmark-circle"></ion-icon>
+                                    Bạn đã đánh giá phim này <strong th:text="${userReview.rating} + ' sao'">5 sao</strong>.
+                                    Gửi lại form bên dưới để cập nhật đánh giá.
+                                </div>
+                                <form th:if="${#authorization.expression('isAuthenticated()')}" 
+                                      th:action="@{/movie/{id}/review(id=${movie.id})}" 
+                                      method="post" 
+                                      class="mb-4">
+                                    <label class="form-label" th:text="${userReview != null} ? 'Cập nhật đánh giá' : 'Đánh giá của bạn'">Đánh giá của bạn</label>
+                                    <div class="rating-input mb-3">
+                                        <input type="radio" id="star5" name="rating" value="5" th:checked="${userReview != null and userReview.rating == 5}" th:required="${userReview == null}">
+                                        <label for="star5"><ion-icon name="star"></ion-icon></label>
+                                        <input type="radio" id="star4" name="rating" value="4" th:checked="${userReview != null and userReview.rating == 4}">
+                                        <label for="star4"><ion-icon name="star"></ion-icon></label>
+                                        <input type="radio" id="star3" name="rating" value="3" th:checked="${userReview != null and userReview.rating == 3}">
+                                        <label for="star3"><ion-icon name="star"></ion-icon></label>
+                                        <input type="radio" id="star2" name="rating" value="2" th:checked="${userReview != null and userReview.rating == 2}">
+                                        <label for="star2"><ion-icon name="star"></ion-icon></label>
+                                        <input type="radio" id="star1" name="rating" value="1" th:checked="${userReview != null and userReview.rating == 1}">
+                                        <label for="star1"><ion-icon name="star"></ion-icon></label>
+                                    </div>
+                                    <div class="form-group">
+                                        <textarea name="comment" class="form-control" rows="3" 
+                                                  placeholder="Viết bình luận của bạn (tùy chọn)"
+                                                  th:text="${userReview != null and userReview.comment != null ? userReview.comment : ''}"></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary btn-sm">
+                                        <ion-icon name="paper-plane"></ion-icon>
+                                        <span th:text="${userReview != null} ? 'Cập nhật đánh giá' : 'Gửi đánh giá'">Gửi đánh giá</span>
+                                    </button>
+                                </form>
+
+                                <p th:unless="${#authorization.expression('isAuthenticated()')}" style="color: var(--gainsboro);">
+                                    Vui lòng <a th:href="@{/auth/login}" style="color: var(--citrine);">đăng nhập</a> để đánh giá và bình luận.
+                                </p>
+
+                                <!-- Reviews List -->
+                                <div th:each="r : ${reviews}" class="review-card">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <strong th:text="${r.user.username}">User</strong>
+                                        <span class="small" th:text="${#temporals.format(r.createdAt, 'dd/MM/yyyy HH:mm')}">17/03/2026</span>
+                                    </div>
+                                    <div class="star-rating mb-2">
+                                        <span th:each="i : ${#numbers.sequence(1, 5)}">
+                                            <ion-icon name="star" th:if="${i <= r.rating}"></ion-icon>
+                                            <ion-icon name="star-outline" th:if="${i > r.rating}"></ion-icon>
+                                        </span>
+                                    </div>
+                                    <p class="mb-0" th:if="${r.comment != null and !r.comment.isEmpty()}" 
+                                       th:text="${r.comment}" style="color: var(--gainsboro);">Bình luận...</p>
+                                </div>
+
+                                <p th:if="${#lists.isEmpty(reviews)}" class="text-center" style="color: var(--gray-x);">
+                                    Chưa có bình luận nào. Hãy là người đầu tiên đánh giá!
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </article>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-brand-wrapper">
+                <a th:href="@{/}" class="logo">
+                    <ion-icon name="film"></ion-icon>
+                    <span>CINEMA</span>
+                </a>
+            </div>
+            
+            <ul class="footer-list">
+                <li><a th:href="@{/}" class="footer-link">Trang Chủ</a></li>
+                <li><a th:href="@{/movies}" class="footer-link">Phim</a></li>
+            </ul>
+            
+            <div class="divider"></div>
+            
+            <ul class="social-list">
+                <li><a href="#" class="social-link"><ion-icon name="logo-facebook"></ion-icon></a></li>
+                <li><a href="#" class="social-link"><ion-icon name="logo-twitter"></ion-icon></a></li>
+                <li><a href="#" class="social-link"><ion-icon name="logo-instagram"></ion-icon></a></li>
+                <li><a href="#" class="social-link"><ion-icon name="logo-youtube"></ion-icon></a></li>
+            </ul>
+            
+            <div class="footer-bottom">
+                <p class="copyright">
+                    &copy; 2026 <a href="#">CINEMA</a>. All Rights Reserved
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- GO TO TOP -->
+    <a href="#top" class="go-top" data-go-top>
+        <ion-icon name="chevron-up"></ion-icon>
+    </a>
+
+    <th:block th:replace="~{fragments/user-layout :: commonScripts}"></th:block>
+    <script th:inline="javascript">
+        // YouTube trailer loader
+        function getYouTubeEmbedUrl(url) {
+            if (!url) return null;
+            var regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+            var match = url.match(regExp);
+            return (match && match[2].length === 11) ? 'https://www.youtube.com/embed/' + match[2] + '?autoplay=1' : null;
+        }
+
+        function loadTrailer() {
+            var trailerUrl = /*[[${movie.trailerUrl}]]*/ '';
+            var embedUrl = getYouTubeEmbedUrl(trailerUrl);
+            if (embedUrl) {
+                document.getElementById('trailerPlaceholder').innerHTML = 
+                    '<iframe src="' + embedUrl + '" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+            }
+        }
+
+        // Animate on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.animate-fadeInLeft, .animate-fadeInRight, .animate-fadeInDown').forEach(el => {
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>

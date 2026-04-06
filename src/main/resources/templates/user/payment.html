@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thanh Toán - CINEMA</title>
+    <th:block th:replace="~{fragments/user-head :: userStyles}"></th:block>
+    <style>
+        .payment-page {
+            padding: 140px 0 60px;
+            min-height: 100vh;
+        }
+        .payment-card {
+            background: var(--gunmetal-1);
+            border-radius: 25px;
+            padding: 35px;
+            max-width: 600px;
+            margin: 0 auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            animation: fadeInUp 0.6s ease forwards;
+        }
+        .success-card {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 25px;
+            padding: 40px;
+            max-width: 550px;
+            margin: 0 auto;
+            text-align: center;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.6);
+            animation: fadeInUp 0.8s ease forwards;
+        }
+        .success-icon {
+            font-size: 80px;
+            color: #2ecc71;
+            margin-bottom: 20px;
+        }
+        .payment-code-box {
+            background: #fff;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .payment-code {
+            font-size: 22px;
+            font-weight: bold;
+            color: var(--primary-color);
+            letter-spacing: 2px;
+            margin: 0;
+        }
+        .qr-section {
+            background: #fff;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        .qr-section h6 { width: 100%; margin-bottom: 15px; }
+        .qr-section img {
+            display: block;
+            max-width: min(100%, 260px);
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 0 auto;
+        }
+        .countdown-timer {
+            font-size: 40px;
+            font-weight: bold;
+            color: var(--primary-color);
+            text-align: center;
+            margin: 25px 0;
+            font-family: monospace;
+        }
+        .bank-info {
+            background: #fff;
+            color: #333;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        .ticket-preview {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 25px 0;
+            text-align: left;
+        }
+    </style>
+</head>
+<body id="top">
+
+    <th:block th:replace="~{fragments/user-layout :: userHeader}"></th:block>
+
+    <main>
+        <article>
+            <section class="payment-page">
+                <div class="container">
+
+                    <!-- Thanh toán thành công -->
+                    <div th:if="${success}" class="success-card">
+                        <div class="success-icon">
+                            <ion-icon name="checkmark-circle"></ion-icon>
+                        </div>
+                        <h2 style="color: #2ecc71; margin-bottom: 10px;">Thanh Toán Thành Công!</h2>
+                        <p style="color: var(--gainsboro); margin-bottom: 20px;">Vé của bạn đang chờ xác nhận từ admin</p>
+
+                        <div class="ticket-preview" style="text-align: left;">
+                            <div class="row align-items-center">
+                                <div class="col-4">
+                                    <img th:src="${booking.showtime.movie.posterUrl != null ? booking.showtime.movie.posterUrl : '/images/no-poster.jpg'}"
+                                         style="width: 100%; border-radius: 10px;" alt="Poster">
+                                </div>
+                                <div class="col-8">
+                                    <h4 style="color: var(--white); margin-bottom: 10px;" th:text="${booking.showtime.movie.title}">Tên phim</h4>
+                                    <p style="color: var(--gainsboro); margin: 5px 0; font-size: 13px;">
+                                        <ion-icon name="calendar-outline" style="color: var(--citrine); margin-right: 5px;"></ion-icon>
+                                        <span th:text="${#temporals.format(booking.showtime.startTime, 'dd/MM/yyyy HH:mm')}">19/03/2026 10:00</span>
+                                    </p>
+                                    <p style="color: var(--gainsboro); margin: 5px 0; font-size: 13px;">
+                                        <ion-icon name="location-outline" style="color: var(--citrine); margin-right: 5px;"></ion-icon>
+                                        <span th:text="${booking.showtime.room.name}">Phòng 1</span>
+                                    </p>
+                                    <p style="color: var(--gainsboro); margin: 5px 0; font-size: 13px;">
+                                        <ion-icon name="chair-outline" style="color: var(--citrine); margin-right: 5px;"></ion-icon>
+                                        <span th:each="seat : ${booking.bookingSeats}" class="badge badge-primary" style="margin-right: 3px;" th:text="${seat.seat.rowName + seat.seat.seatNumber}">A1</span>
+                                    </p>
+                                    <hr style="border-color: rgba(255,255,255,0.2); margin: 10px 0;">
+                                    <p style="color: var(--primary-color); font-weight: bold; font-size: 18px; margin: 0;">
+                                        Đã thanh toán: <span th:text="${#numbers.formatDecimal(totalPayment, 1, 'COMMA', 0, 'POINT')}">195.000</span> VNĐ
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div th:if="${booking.user.email != null and !booking.user.email.isEmpty()}"
+                             class="alert" style="background: rgba(46, 204, 113, 0.2); border: 1px solid rgba(46, 204, 113, 0.5); color: #2ecc71; border-radius: 10px; padding: 15px; margin-top: 20px;">
+                            <ion-icon name="mail"></ion-icon>
+                            Vé điện tử đã được gửi qua email <strong th:text="${booking.user.email}">email</strong>
+                        </div>
+
+                        <div style="margin-top: 25px; display: flex; gap: 15px; justify-content: center;">
+                            <a th:href="@{/user/bookings}" class="btn btn-primary">
+                                <ion-icon name="list"></ion-icon>
+                                Vé của tôi
+                            </a>
+                            <a th:href="@{/}" class="btn btn-outline">
+                                <ion-icon name="home"></ion-icon>
+                                Trang chủ
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Trang thanh toán -->
+                    <div th:unless="${success}" class="payment-card">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                            <a th:href="@{/user/bookings}" class="btn btn-outline btn-sm">
+                                <ion-icon name="arrow-back"></ion-icon>
+                                Quay lại
+                            </a>
+                            <h3 style="margin: 0; flex: 1; text-align: center;">
+                                <ion-icon name="card" style="color: var(--citrine);"></ion-icon>
+                                Thanh Toán Vé Xem Phim
+                            </h3>
+                            <div style="width: 80px;"></div>
+                        </div>
+
+                        <div th:if="${error != null}" class="alert" style="background: rgba(231, 76, 60, 0.2); border: 1px solid rgba(231, 76, 60, 0.5); color: #e74c3c; border-radius: 12px; padding: 15px; margin-bottom: 20px;">
+                            <ion-icon name="alert-circle"></ion-icon>
+                            <span th:text="${error}">Lỗi</span>
+                        </div>
+
+                        <!-- Hết hạn -->
+                        <div th:if="${isExpired}" class="alert" style="background: rgba(231, 76, 60, 0.2); border: 1px solid rgba(231, 76, 60, 0.5); color: #e74c3c; border-radius: 12px; padding: 15px; margin-bottom: 20px;">
+                            <ion-icon name="warning"></ion-icon>
+                            Thời gian thanh toán đã hết! Vui lòng đặt lại vé.
+                        </div>
+
+                        <!-- Thông tin đơn hàng -->
+                        <div style="background: rgba(255,255,255,0.05); border-radius: 15px; padding: 20px; margin-bottom: 20px;">
+                            <h4 style="margin-bottom: 15px; color: var(--citrine);">Thông Tin Đơn Hàng</h4>
+                            <div style="display: grid; gap: 12px;">
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span style="color: var(--gainsboro);">Phim:</span>
+                                    <span style="color: var(--white); font-weight: 600;" th:text="${booking.showtime.movie.title}">Tên phim</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span style="color: var(--gainsboro);">Suất chiếu:</span>
+                                    <span style="color: var(--white);" th:text="${#temporals.format(booking.showtime.startTime, 'dd/MM/yyyy HH:mm')}">01/01/2024 18:00</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span style="color: var(--gainsboro);">Ghế:</span>
+                                    <span>
+                                        <span th:each="seat : ${booking.bookingSeats}" class="badge badge-outline" style="margin-left: 3px;" th:text="${seat.seat.rowName + seat.seat.seatNumber}">A1</span>
+                                    </span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span style="color: var(--gainsboro);">Tiền vé:</span>
+                                    <span style="color: var(--white);" th:text="${#numbers.formatDecimal(booking.totalPrice != null ? booking.totalPrice : 0, 1, 'COMMA', 0, 'POINT')} + ' VNĐ'">80.000 VNĐ</span>
+                                </div>
+                                <div th:if="${booking.concessionTotal != null and booking.concessionTotal.compareTo(0) > 0}" style="display: flex; justify-content: space-between;">
+                                    <span style="color: var(--gainsboro);">Bắp nước:</span>
+                                    <span style="color: var(--white);" th:text="${#numbers.formatDecimal(booking.concessionTotal, 1, 'COMMA', 0, 'POINT')} + ' VNĐ'">0 VNĐ</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span style="color: var(--gainsboro);">Giảm giá:</span>
+                                    <span style="color: #28a745; font-weight: 600;">
+                                        - <span th:text="${#numbers.formatDecimal(booking.discountAmount != null ? booking.discountAmount : 0, 1, 'COMMA', 0, 'POINT')}">0</span> VNĐ
+                                    </span>
+                                </div>
+                                <hr style="border-color: rgba(255,255,255,0.1);">
+                                <div style="display: flex; justify-content: space-between; font-size: 18px;">
+                                    <span style="color: var(--white); font-weight: bold;">Tổng thanh toán:</span>
+                                    <span style="color: #28a745; font-weight: bold;" th:text="${#numbers.formatDecimal(totalPayment, 1, 'COMMA', 0, 'POINT')} + ' VNĐ'">80.000 VNĐ</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- QR Code thanh toán -->
+                        <div th:if="${!isExpired}" id="paymentCountdown" th:attr="data-expiry=${expiredAtIso}">
+                            <!-- Form áp mã giảm giá -->
+                            <form th:action="@{/user/payment/{id}/update-order(id=${booking.id})}" method="post"
+                                  style="background: rgba(255,255,255,0.06); border-radius: 15px; padding: 20px; margin-bottom: 20px; text-align: left;">
+                                <h5 style="color: var(--citrine); margin-bottom: 12px; font-size: 16px;">
+                                    <ion-icon name="pricetag-outline"></ion-icon> Mã giảm giá
+                                </h5>
+                                <p style="color: var(--gainsboro); font-size: 12px; margin-bottom: 14px;">
+                                    Mỗi mã tối đa <strong>5 lần</strong> / tài khoản (mỗi lần thanh toán thành công trừ 1).
+                                    Chọn "— Không dùng —" để bỏ áp dụng.
+                                </p>
+                                <div class="mb-3">
+                                    <label style="color: var(--gainsboro); font-size: 13px;">Mã giảm vé / phim</label>
+                                    <select name="ticketVoucherCode" class="form-select"
+                                            style="background: #ffffff; border: 1.5px solid #d4d4d4; color: #222222; border-radius: 10px; font-weight: 500;">
+                                        <option value="" th:selected="${booking.voucherCode == null or booking.voucherCode.isEmpty()}">— Không dùng —</option>
+                                        <option th:each="v : ${ticketVouchers}"
+                                                th:value="${v.code}"
+                                                th:selected="${booking.voucherCode != null and booking.voucherCode.equalsIgnoreCase(v.code)}"
+                                                th:text="|${v.code} — Giảm ${v.valueType.name() == 'PERCENT' ? v.value + '%' : #numbers.formatDecimal(v.value, 1, 'COMMA', 0, 'POINT') + ' VNĐ'} (HSD: ${v.validTo != null ? #temporals.format(v.validTo, 'dd/MM') : '∞'})|">
+                                            CODE
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label style="color: var(--gainsboro); font-size: 13px;">Mã giảm bắp nước</label>
+                                    <select name="concessionVoucherCode" class="form-select"
+                                            style="background: #ffffff; border: 1.5px solid #d4d4d4; color: #222222; border-radius: 10px; font-weight: 500;">
+                                        <option value="" th:selected="${booking.concessionVoucherCode == null or booking.concessionVoucherCode.isEmpty()}">— Không dùng —</option>
+                                        <option th:each="v : ${concessionVouchers}"
+                                                th:value="${v.code}"
+                                                th:selected="${booking.concessionVoucherCode != null and booking.concessionVoucherCode.equalsIgnoreCase(v.code)}"
+                                                th:text="|${v.code} — Giảm ${v.valueType.name() == 'PERCENT' ? v.value + '%' : #numbers.formatDecimal(v.value, 1, 'COMMA', 0, 'POINT') + ' VNĐ'} (HSD: ${v.validTo != null ? #temporals.format(v.validTo, 'dd/MM') : '∞'})|">
+                                            CODE
+                                        </option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-outline" style="width: 100%; border-radius: 10px;">
+                                    <ion-icon name="refresh"></ion-icon> Áp dụng / cập nhật mã
+                                </button>
+                            </form>
+
+                            <div class="payment-code-box">
+                                <p style="color: #666; font-size: 12px; margin: 0;">Mã thanh toán</p>
+                                <p class="payment-code" th:text="${payment.paymentCode}">PAY123456</p>
+                            </div>
+
+                            <div class="qr-section">
+                                <h6 style="color: #333; margin-bottom: 15px;">Quét mã QR để thanh toán</h6>
+                                <img th:src="|https://img.vietqr.io/image/VPB-0784185688-compact2.jpg?amount=${payment.amount}&addInfo=${payment.paymentCode}&accountName=Tong%20Vu%20Tan%20Phat|"
+                                     alt="VietQR" class="vietqr-img">
+                            </div>
+
+                            <div class="bank-info">
+                                <h5 style="color: #333; margin-bottom: 15px;">
+                                    <ion-icon name="business" style="color: var(--citrine); margin-right: 8px;"></ion-icon>
+                                    Thông tin chuyển khoản
+                                </h5>
+                                <div style="display: grid; gap: 10px;">
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span style="color: #666;">Ngân hàng:</span>
+                                        <span style="font-weight: bold;">VPBANK</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span style="color: #666;">Số tài khoản:</span>
+                                        <span style="font-weight: bold;">0784185688</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span style="color: #666;">Chủ tài khoản:</span>
+                                        <span style="font-weight: bold;">Tổng Vũ Tấn Phát</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span style="color: #666;">Nội dung CK:</span>
+                                        <span style="font-weight: bold; color: var(--primary-color);" th:text="${payment.paymentCode}">PAY123456</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="countdown-timer" id="countdown">
+                                <ion-icon name="time"></ion-icon>
+                                <span id="timer">06:00</span>
+                            </div>
+
+                            <p style="text-align: center; color: var(--gainsboro); margin-bottom: 20px;">
+                                Vui lòng thanh toán trong vòng 6 phút
+                            </p>
+
+                            <form th:action="@{/user/payment/{id}/confirm(id=${booking.id})}" method="post" style="text-align: center;">
+                                <button type="submit" class="btn btn-primary" style="padding: 15px 40px; font-size: 15px;">
+                                    <ion-icon name="checkmark"></ion-icon>
+                                    Tôi đã thanh toán
+                                </button>
+                            </form>
+                        </div>
+
+                        <div style="text-align: center; margin-top: 25px;">
+                            <a th:href="@{/user/bookings}" class="btn btn-outline btn-sm">
+                                <ion-icon name="list"></ion-icon>
+                                Vé của tôi
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </article>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-brand-wrapper">
+                <a th:href="@{/}" class="logo">
+                    <ion-icon name="film"></ion-icon>
+                    <span>CINEMA</span>
+                </a>
+            </div>
+            <div class="footer-bottom">
+                <p class="copyright">
+                    &copy; 2026 <a href="#">CINEMA</a>. All Rights Reserved
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <script th:if="${!success and !isExpired}">
+        (function () {
+            var wrap = document.getElementById('paymentCountdown');
+            if (!wrap) return;
+            var expiryStr = wrap.getAttribute('data-expiry') || '';
+            var expiryTime = expiryStr ? new Date(expiryStr.replace(' ', 'T')).getTime() : 0;
+            var timerEl = document.getElementById('timer');
+            var countdownEl = document.getElementById('countdown');
+            if (!timerEl || !countdownEl) return;
+            function tick() {
+                if (expiryTime <= 0) {
+                    timerEl.textContent = '06:00';
+                    return;
+                }
+                var now = Date.now();
+                var distance = expiryTime - now;
+                if (distance < 0) {
+                    timerEl.textContent = 'HẾT GIỜ';
+                    countdownEl.style.color = '#e74c3c';
+                    window.location.reload();
+                    return;
+                }
+                var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                timerEl.textContent =
+                    (minutes < 10 ? '0' + minutes : minutes) + ':' +
+                    (seconds < 10 ? '0' + seconds : seconds);
+            }
+            tick();
+            setInterval(tick, 1000);
+        })();
+    </script>
+
+    <th:block th:replace="~{fragments/user-layout :: commonScripts}"></th:block>
+</body>
+</html>

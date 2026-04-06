@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{staff/fragments/staff-layout :: layout('Thêm / sửa mã giảm giá', 'vouchers', ~{::main-content}, ~{::page-scripts})}">
+<head><title>Voucher form</title></head>
+<body>
+<th:block th:fragment="main-content">
+    <div class="container-fluid" style="max-width: 620px;">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+            <div>
+                <h1 class="fs-3 mb-1">
+                    <i class="ti ti-discount me-2"></i>
+                    <span th:if="${voucher.id != null}">Sửa</span><span th:unless="${voucher.id != null}">Thêm</span> mã giảm giá
+                </h1>
+                <p class="mb-0 text-secondary">Nhập thông tin khuyến mãi</p>
+            </div>
+            <a th:href="@{/staff/vouchers}" class="btn btn-outline-secondary">
+                <i class="ti ti-arrow-left me-1"></i>Quay lại
+            </a>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <div th:if="${error}" class="alert alert-danger mb-3" role="alert" th:text="${error}"></div>
+                <form th:action="@{/staff/vouchers/save}" th:object="${voucher}" method="post">
+                    <input type="hidden" th:field="*{id}"/>
+                    <div class="mb-3">
+                        <label class="form-label">Mã (viết hoa, không dấu)</label>
+                        <input type="text" class="form-control" th:field="*{code}" placeholder="VD: GIAMGIA10" required maxlength="50"/>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Áp dụng cho</label>
+                        <select class="form-select" th:field="*{discountType}" required>
+                            <option value="TICKET">Giảm giá vé xem phim</option>
+                            <option value="CONCESSION">Giảm giá bắp nước</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Kiểu giảm</label>
+                        <select class="form-select" th:field="*{valueType}" required>
+                            <option value="PERCENT">Theo phần trăm (%)</option>
+                            <option value="FIXED">Số tiền cố định (VNĐ)</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Giá trị (số % hoặc số tiền VNĐ)</label>
+                        <input type="number" class="form-control" th:field="*{value}" min="0" step="0.01" required/>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Gắn với thông báo KM (tùy chọn)</label>
+                        <select class="form-select" th:field="*{linkedAnnouncementId}" id="linkedAnnouncementId">
+                            <option value="">— Không — mã theo khung giờ riêng bên dưới</option>
+                            <option th:each="ann : ${promoAnnouncements}"
+                                    th:value="${ann.id}"
+                                    th:text="${ann.title + ' (' + #temporals.format(ann.publishedAt, 'dd/MM/yyyy HH:mm') + ' → ' + #temporals.format(ann.expiresAt, 'dd/MM/yyyy HH:mm') + ')'}">
+                            </option>
+                        </select>
+                        <div class="form-text">Nếu chọn thông báo: khách chỉ nhập được mã khi thông báo đó còn đang hiển thị (cùng lúc với banner KM trên trang chủ).</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Có hiệu lực từ</label>
+                            <input type="datetime-local" class="form-control" name="validFrom" id="validFrom" step="60" required
+                                   th:value="${voucher.validFrom != null ? #temporals.format(voucher.validFrom, 'yyyy-MM-dd''T''HH:mm') : ''}"
+                                   th:min="${applyMinToValidFrom} ? ${minDateTime} : null"/>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Đến hết</label>
+                            <input type="datetime-local" class="form-control" name="validTo" id="validTo" step="60" required
+                                   th:value="${voucher.validTo != null ? #temporals.format(voucher.validTo, 'yyyy-MM-dd''T''HH:mm') : ''}"
+                                   th:min="${minDateTime}"/>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Số lần dùng tối đa (để trống = không giới hạn)</label>
+                        <input type="number" class="form-control" th:field="*{maxUses}" min="1" placeholder="VD: 100"/>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" th:field="*{active}" id="active"/>
+                        <label class="form-check-label" for="active">Kích hoạt mã</label>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="ti ti-device-floppy me-1"></i>Lưu
+                        </button>
+                        <a th:href="@{/staff/vouchers}" class="btn btn-outline-secondary">Hủy</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</th:block>
+<th:block th:fragment="page-scripts"></th:block>
+</body>
+</html>

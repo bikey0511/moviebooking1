@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{admin/fragments/admin-layout :: layout('Thống kê', 'analytics', ~{::main-content}, ~{::page-scripts})}">
+<head><title>Analytics</title></head>
+<body>
+<th:block th:fragment="main-content">
+    <div class="container-fluid">
+        <div class="row mb-4">
+            <div class="col-12">
+                <h1 class="fs-3 mb-1">Thống kê</h1>
+                <p class="mb-0 text-secondary">Biểu đồ doanh thu và phân bổ trạng thái</p>
+            </div>
+        </div>
+        <div class="row g-3">
+            <div class="col-12">
+                <div class="admin-chart-card">
+                    <h2 class="h5 mb-3"><i class="ti ti-chart-bar me-2"></i>Doanh thu theo tháng</h2>
+                    <canvas id="monthlyRevenueChart" height="100"></canvas>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="admin-chart-card">
+                    <h2 class="h5 mb-3"><i class="ti ti-chart-donut me-2"></i>Phim theo trạng thái</h2>
+                    <canvas id="movieStatusChart" height="250"></canvas>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="admin-chart-card">
+                    <h2 class="h5 mb-3"><i class="ti ti-chart-donut me-2"></i>Đặt vé theo trạng thái</h2>
+                    <canvas id="bookingStatusChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</th:block>
+<th:block th:fragment="page-scripts">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const chartText = '#495057';
+        const chartGrid = '#e9ecef';
+        const revenueCtx = document.getElementById('monthlyRevenueChart').getContext('2d');
+        const months = ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'];
+        fetch('/admin/dashboard-data')
+            .then(response => response.json())
+            .then(data => {
+                new Chart(revenueCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: months,
+                        datasets: [{
+                            label: 'Doanh thu (VNĐ)',
+                            data: data.revenues,
+                            backgroundColor: 'rgba(230, 98, 57, 0.75)',
+                            borderColor: '#E66239',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { labels: { color: chartText } }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: { color: chartText },
+                                grid: { color: chartGrid }
+                            },
+                            x: {
+                                ticks: { color: chartText },
+                                grid: { color: chartGrid }
+                            }
+                        }
+                    }
+                });
+            });
+        const movieStatusCtx = document.getElementById('movieStatusChart').getContext('2d');
+        new Chart(movieStatusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Đang chiếu', 'Sắp chiếu'],
+                datasets: [{
+                    data: [5, 3],
+                    backgroundColor: ['#00C951', '#F0B100']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: chartText }
+                    }
+                }
+            }
+        });
+        const bookingStatusCtx = document.getElementById('bookingStatusChart').getContext('2d');
+        new Chart(bookingStatusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Đã thanh toán', 'Chờ xác nhận', 'Đã hủy'],
+                datasets: [{
+                    data: [10, 5, 2],
+                    backgroundColor: ['#00C951', '#F0B100', '#FB2C36']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: chartText }
+                    }
+                }
+            }
+        });
+    </script>
+</th:block>
+</body>
+</html>

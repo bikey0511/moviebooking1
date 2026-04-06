@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thông tin cá nhân - CINEMA</title>
+    <th:block th:replace="~{fragments/user-head :: userStyles}"></th:block>
+    <style>
+        /* Biến dự phòng nếu theme chưa tải (nav/header dùng class từ cinema-user.css) */
+        :root {
+            --primary-color: #e50914;
+            --citrine: hsl(45, 100%, 56%);
+            --eerie-black: hsl(207, 19%, 11%);
+            --raisin-black: hsl(228, 13%, 15%);
+            --gunmetal-1: hsl(229, 15%, 21%);
+            --gunmetal-2: hsl(216, 22%, 18%);
+            --gainsboro: hsl(0, 7%, 88%);
+            --gray-x: hsl(0, 0%, 74%);
+            --white: hsl(0, 100%, 100%);
+            --transition-1: 0.15s ease;
+            --transition-2: 0.25s ease-in;
+        }
+        body {
+            background-color: var(--eerie-black);
+            color: var(--white);
+            font-family: 'Poppins', sans-serif;
+        }
+        .profile-page {
+            padding: 140px 0 60px;
+            min-height: 100vh;
+        }
+
+        .profile-card {
+            background: var(--gunmetal-1);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            margin: 0 auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        .profile-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 25px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, var(--primary-color), #b20710);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-size: 40px;
+            color: var(--white);
+        }
+
+        .profile-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .profile-subtitle {
+            color: var(--gainsboro);
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 22px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--gainsboro);
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 14px 18px;
+            background: var(--raisin-black);
+            border: 2px solid var(--gunmetal-2);
+            border-radius: 12px;
+            color: var(--white);
+            font-size: 14px;
+            transition: var(--transition-1);
+        }
+
+        .form-control:focus {
+            border-color: var(--citrine);
+            box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.1);
+        }
+
+        .form-control:disabled {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--gainsboro);
+            cursor: not-allowed;
+        }
+
+        .form-control::placeholder {
+            color: var(--gray-x);
+        }
+
+        .btn-save {
+            background: linear-gradient(135deg, var(--primary-color), #b20710);
+            border: none;
+            padding: 14px 30px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 14px;
+            color: var(--white);
+            cursor: pointer;
+            transition: var(--transition-2);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-save:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(229, 9, 20, 0.4);
+        }
+
+        .alert-success {
+            background: rgba(46, 204, 113, 0.2);
+            border: 1px solid rgba(46, 204, 113, 0.5);
+            color: #2ecc71;
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert-danger {
+            background: rgba(231, 76, 60, 0.2);
+            border: 1px solid rgba(231, 76, 60, 0.5);
+            color: #e74c3c;
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body id="top">
+
+    <th:block th:replace="~{fragments/user-layout :: userHeader}"></th:block>
+
+    <main>
+        <article>
+            <section class="profile-page">
+                <div class="container">
+                    <div class="profile-card">
+                        <div class="profile-header">
+                            <div class="profile-avatar">
+                                <ion-icon name="person"></ion-icon>
+                            </div>
+                            <h2 class="profile-title">Thông Tin Cá Nhân</h2>
+                            <p class="profile-subtitle">Quản lý thông tin tài khoản của bạn</p>
+                        </div>
+
+                        <div th:if="${success}" class="alert-success">
+                            <ion-icon name="checkmark-circle"></ion-icon>
+                            <span>Đã cập nhật thông tin thành công!</span>
+                        </div>
+                        <div th:if="${error}" class="alert-danger">
+                            <ion-icon name="alert-circle"></ion-icon>
+                            <span th:text="${error}">Có lỗi xảy ra</span>
+                        </div>
+
+                        <form th:action="@{/user/profile}" method="post">
+                            <div class="form-group">
+                                <label class="form-label">Tên đăng nhập</label>
+                                <input type="text" class="form-control" th:value="${user.username}" disabled readonly>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Email</label>
+                                <input type="email" name="email" class="form-control" th:value="${user.email}" placeholder="email@example.com">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Số điện thoại</label>
+                                <input type="tel" name="phone" class="form-control" th:value="${user.phone}" placeholder="0912345678">
+                            </div>
+
+                            <div style="display: flex; gap: 15px; margin-top: 30px;">
+                                <button type="submit" class="btn-save">
+                                    <ion-icon name="save-outline"></ion-icon>
+                                    Lưu Thay Đổi
+                                </button>
+                                <a th:href="@{/}" class="btn btn-outline" style="padding: 14px 25px;">
+                                    <ion-icon name="arrow-back-outline"></ion-icon>
+                                    Quay Về
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </section>
+        </article>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-brand-wrapper">
+                <a th:href="@{/}" class="logo">
+                    <ion-icon name="film"></ion-icon>
+                    <span>CINEMA</span>
+                </a>
+            </div>
+            
+            <div class="footer-bottom">
+                <p class="copyright">
+                    &copy; 2026 <a href="#">CINEMA</a>. All Rights Reserved
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <th:block th:replace="~{fragments/user-layout :: commonScripts}"></th:block>
+</body>
+</html>

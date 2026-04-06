@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini Game - CINEMA</title>
+    <th:block th:replace="~{fragments/user-head :: userStyles}"></th:block>
+    <style>
+        body { background: var(--eerie-black); }
+        .msg-hero {
+            background: linear-gradient(160deg, rgba(0,0,0,0.5), rgba(0,0,0,0.6)),
+                        url('/images/hero-bg.jpg') no-repeat;
+            background-size: cover;
+            background-position: center;
+            padding: 140px 0 60px;
+            text-align: center;
+        }
+        .msg-card {
+            background: var(--gunmetal-1);
+            border-radius: 24px;
+            padding: 48px 32px;
+            max-width: 520px;
+            margin: -40px auto 60px;
+            text-align: center;
+            border: 1px solid rgba(244,208,63,0.2);
+        }
+        .msg-icon { font-size: 4rem; margin-bottom: 16px; }
+        .msg-title { color: var(--citrine); font-size: 1.6rem; font-weight: 700; margin-bottom: 12px; }
+        .msg-body { color: var(--gainsboro); font-size: 1rem; line-height: 1.6; margin-bottom: 28px; }
+    </style>
+</head>
+<body>
+    <th:block th:replace="~{fragments/user-layout :: userHeader}"></th:block>
+    <div class="msg-hero">
+        <div class="container">
+            <h1 style="color:var(--citrine); font-size:2rem;">
+                <ion-icon name="game-controller"></ion-icon> Mini Game
+            </h1>
+        </div>
+    </div>
+    <div class="container">
+        <div class="msg-card">
+            <div class="msg-icon">📅</div>
+            <div class="msg-title">Bạn đã chơi hôm nay rồi!</div>
+            <div class="msg-body">
+                Mỗi ngày chỉ được chơi <strong style="color:var(--citrine)">1 lần</strong> thôi.<br>
+                Hẹn gặp lại bạn vào ngày mai nhé!
+            </div>
+            <a th:href="@{/}" class="btn btn-primary">
+                <ion-icon name="home"></ion-icon> Về trang chủ
+            </a>
+        </div>
+    </div>
+    <th:block th:replace="~{fragments/user-layout :: userFooter}"></th:block>
+    <th:block th:replace="~{fragments/user-layout :: commonScripts}"></th:block>
+</body>
+</html>

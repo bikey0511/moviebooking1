@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng Nhập - CINEMA</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+    <style>
+        :root {
+            --primary-color: #e50914;
+            --citrine: hsl(45, 100%, 56%);
+            --eerie-black: hsl(207, 19%, 11%);
+            --gunmetal-1: hsl(229, 15%, 21%);
+            --gunmetal-2: hsl(216, 22%, 18%);
+            --gainsboro: hsl(0, 7%, 88%);
+            --white: hsl(0, 100%, 100%);
+            --ff-poppins: 'Poppins', sans-serif;
+            --fw-500: 500;
+            --fw-700: 700;
+            --transition-1: 0.15s ease;
+            --transition-2: 0.25s ease-in;
+            --transition-3: 0.35s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--ff-poppins);
+            background: linear-gradient(135deg, var(--eerie-black) 0%, #0d0d0d 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(229, 9, 20, 0.1) 0%, transparent 50%);
+            animation: float 8s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-30px) rotate(5deg); }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .auth-card {
+            background: var(--gunmetal-1);
+            border-radius: 25px;
+            padding: 50px 40px;
+            max-width: 450px;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
+            animation: fadeInUp 0.8s ease forwards;
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .auth-logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            transition: var(--transition-1);
+        }
+
+        .auth-logo:hover {
+            transform: scale(1.05);
+        }
+
+        .auth-logo ion-icon {
+            font-size: 36px;
+        }
+
+        .auth-header h1 {
+            color: var(--white);
+            font-size: 26px;
+            margin-bottom: 10px;
+        }
+
+        .auth-header p {
+            color: var(--gainsboro);
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 22px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--gainsboro);
+            font-size: 13px;
+            font-weight: var(--fw-500);
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gainsboro);
+            font-size: 18px;
+            transition: var(--transition-1);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 16px 18px 16px 50px;
+            background: var(--gunmetal-2);
+            border: 2px solid transparent;
+            border-radius: 12px;
+            color: var(--white);
+            font-size: 14px;
+            transition: var(--transition-1);
+        }
+
+        .form-control:focus {
+            border-color: var(--citrine);
+            box-shadow: 0 0 0 4px rgba(255, 193, 7, 0.1);
+        }
+
+        .form-control:focus + .input-icon,
+        .form-control:focus ~ .input-icon {
+            color: var(--citrine);
+        }
+
+        .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #b20710 100%);
+            border: none;
+            padding: 16px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 15px;
+            width: 100%;
+            color: var(--white);
+            cursor: pointer;
+            transition: var(--transition-2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(229, 9, 20, 0.4);
+        }
+
+        .btn-google {
+            background: linear-gradient(135deg, #db4437 0%, #c13527 100%);
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            width: 100%;
+            color: var(--white);
+            cursor: pointer;
+            transition: var(--transition-2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn-google:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(219, 68, 55, 0.4);
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 25px 0;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: "";
+            flex: 1;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .divider span {
+            padding: 0 15px;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 13px;
+        }
+
+        .auth-footer {
+            text-align: center;
+            margin-top: 25px;
+            color: var(--gainsboro);
+            font-size: 14px;
+        }
+
+        .auth-footer a {
+            color: var(--citrine);
+            text-decoration: none;
+            font-weight: var(--fw-600);
+            transition: var(--transition-1);
+        }
+
+        .auth-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .alert-toast {
+            border-radius: 12px;
+            border: none;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            animation: fadeInUp 0.5s ease forwards;
+            font-size: 14px;
+        }
+
+        .alert-toast.alert-danger {
+            background: linear-gradient(135deg, rgba(220, 53, 69, 0.95), rgba(200, 35, 51, 0.95));
+            color: var(--white);
+        }
+
+        .alert-toast.alert-success {
+            background: linear-gradient(135deg, rgba(46, 204, 113, 0.95), rgba(34, 139, 34, 0.95));
+            color: var(--white);
+        }
+
+        .alert-toast ion-icon {
+            font-size: 20px;
+        }
+
+        .demo-accounts {
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            border-radius: 10px;
+            padding: 12px 15px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .demo-accounts p {
+            color: var(--gainsboro);
+            font-size: 12px;
+            margin: 0;
+        }
+
+        .demo-accounts code {
+            color: var(--citrine);
+            font-weight: var(--fw-600);
+        }
+
+        /* Welcome Voucher Card */
+        .welcome-voucher-card {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 1.5px solid rgba(244, 208, 63, 0.55);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 18px;
+            align-items: center;
+            animation: wvFade 0.5s ease forwards;
+            position: relative;
+            overflow: hidden;
+        }
+        .welcome-voucher-card::before {
+            content: '';
+            position: absolute;
+            top: -40px; right: -40px;
+            width: 120px; height: 120px;
+            background: rgba(244, 208, 63, 0.07);
+            border-radius: 50%;
+        }
+        @keyframes wvFade {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .wv-left { flex: 1; }
+        .wv-tag {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: .12em;
+            color: #222;
+            background: var(--citrine);
+            border-radius: 4px;
+            padding: 3px 8px;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+        .wv-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #ffe066;
+            margin-bottom: 6px;
+        }
+        .wv-desc {
+            font-size: 12px;
+            color: rgba(255,255,255,0.65);
+            line-height: 1.5;
+        }
+        .wv-right { text-align: center; flex-shrink: 0; }
+        .wv-code-box {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(244,208,63,0.3);
+            border-radius: 10px;
+            padding: 10px 14px;
+            margin-bottom: 8px;
+        }
+        .wv-code-label {
+            font-size: 10px;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 4px;
+        }
+        .wv-code {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--citrine);
+            letter-spacing: .06em;
+        }
+        .wv-copy-btn {
+            background: rgba(244,208,63,0.15);
+            border: 1px solid rgba(244,208,63,0.4);
+            border-radius: 6px;
+            color: #ffe066;
+            font-size: 11px;
+            padding: 3px 10px;
+            cursor: pointer;
+            margin-top: 6px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: background 0.2s;
+        }
+        .wv-copy-btn:hover { background: rgba(244,208,63,0.28); }
+        .wv-copy-btn.copied {
+            background: rgba(46,204,113,0.25);
+            border-color: rgba(46,204,113,0.5);
+            color: #2ecc71;
+        }
+        .wv-value {
+            font-size: 13px;
+            color: #fff;
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+        .wv-hint {
+            font-size: 10px;
+            color: rgba(255,255,255,0.4);
+        }
+
+        @media (max-width: 480px) {
+            .welcome-voucher-card { flex-direction: column; text-align: center; }
+            .wv-right { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-card">
+        <div class="auth-header">
+            <a href="/" class="auth-logo">
+                <ion-icon name="film"></ion-icon>
+                <span>CINEMA</span>
+            </a>
+            <h1>Chào Mừng Trở Lại</h1>
+            <p>Đăng nhập để đặt vé xem phim</p>
+        </div>
+
+        <div th:if="${error == 'disabled'}" class="alert-toast alert-danger" role="alert">
+            <ion-icon name="shield-outline"></ion-icon>
+            <span>Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên. Hotline: 0784185688</span>
+        </div>
+        <div th:if="${error == 'bad_credentials'}" class="alert-toast alert-danger" role="alert">
+            <ion-icon name="alert-circle"></ion-icon>
+            <span>Tên đăng nhập hoặc mật khẩu không đúng.</span>
+        </div>
+        <div th:if="${error == 'user_not_found'}" class="alert-toast alert-danger" role="alert">
+            <ion-icon name="alert-circle"></ion-icon>
+            <span>Tài khoản không tồn tại.</span>
+        </div>
+        <div th:if="${error == 'true' and error != 'disabled' and error != 'bad_credentials' and error != 'user_not_found'}" class="alert-toast alert-danger" role="alert">
+            <ion-icon name="alert-circle"></ion-icon>
+            <span>Đăng nhập thất bại. Vui lòng thử lại.</span>
+        </div>
+        <div th:if="${message}" class="alert-toast alert-success" role="alert">
+            <ion-icon name="checkmark-circle"></ion-icon>
+            <span>Đăng xuất thành công!</span>
+        </div>
+
+        <!-- Voucher chào mừng — hiện khi đăng ký thành công -->
+        <div th:if="${welcomeVoucher != null}" class="welcome-voucher-card">
+            <div class="wv-left">
+                <div class="wv-tag">VOUCHER MỚI</div>
+                <div class="wv-title">Chúc mừng bạn đã đăng ký thành công!</div>
+                <div class="wv-desc">Bạn nhận được 1 voucher chào mừng dành riêng cho tài khoản mới.</div>
+            </div>
+            <div class="wv-right">
+                <div class="wv-code-box">
+                    <div class="wv-code-label">Mã voucher</div>
+                    <div class="wv-code" id="wvCode" th:text="${welcomeVoucher}"></div>
+                    <button type="button" class="wv-copy-btn" onclick="copyVoucherCode()">
+                        <ion-icon name="copy-outline"></ion-icon>
+                        Sao chép
+                    </button>
+                </div>
+                <div class="wv-value">Giảm <strong>20%</strong> tiền vé</div>
+                <div class="wv-hint">Hạn sử dụng: 30 ngày kể từ hôm nay</div>
+            </div>
+        </div>
+
+        <form th:action="@{/auth/login}" method="post">
+            <div class="form-group">
+                <label for="username" class="form-label">Tên đăng nhập</label>
+                <div class="input-wrapper">
+                    <input type="text" class="form-control" id="username" name="username" 
+                           placeholder="Nhập tên đăng nhập" required autofocus>
+                    <ion-icon name="person-outline" class="input-icon"></ion-icon>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="password" class="form-label">Mật khẩu</label>
+                <div class="input-wrapper">
+                    <input type="password" class="form-control" id="password" name="password" 
+                           placeholder="Nhập mật khẩu" required>
+                    <ion-icon name="lock-closed-outline" class="input-icon"></ion-icon>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-submit">
+                <ion-icon name="log-in-outline"></ion-icon>
+                Đăng Nhập
+            </button>
+        </form>
+
+        <div class="divider">
+            <span>hoặc</span>
+        </div>
+
+        <a th:href="@{/oauth2/authorization/google}" class="btn-google">
+            <ion-icon name="logo-google"></ion-icon>
+            Đăng nhập với Google
+        </a>
+
+        <div class="auth-footer">
+            Bạn chưa có tài khoản? <a th:href="@{/auth/register}">Đăng ký ngay</a>
+        </div>
+
+
+    <script>
+        function copyVoucherCode() {
+            var code = document.getElementById('wvCode') ? document.getElementById('wvCode').textContent.trim() : '';
+            if (!code) return;
+            navigator.clipboard.writeText(code).then(function() {
+                var btn = document.querySelector('.wv-copy-btn');
+                if (btn) {
+                    btn.classList.add('copied');
+                    var orig = btn.innerHTML;
+                    btn.innerHTML = '<ion-icon name="checkmark-outline"></ion-icon> Đã copy!';
+                    setTimeout(function() { btn.innerHTML = orig; btn.classList.remove('copied'); }, 2000);
+                }
+            });
+        }
+    </script>
+</body>

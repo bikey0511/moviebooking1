@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{staff/fragments/staff-layout :: layout('Chi tiết đặt vé', 'bookings', ~{::main-content}, ~{::page-scripts})}">
+<head><title>Booking Detail</title></head>
+<body>
+<th:block th:fragment="main-content">
+    <div class="container-fluid" style="max-width: 900px;">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+            <div>
+                <h1 class="fs-3 mb-1">Chi tiết đặt vé</h1>
+                <p class="mb-0 text-secondary">Mã vé: <strong th:text="${booking.ticketCode}">CINEMA-123</strong></p>
+            </div>
+            <a th:href="@{/staff/bookings}" class="btn btn-outline-secondary">
+                <i class="ti ti-arrow-left me-1"></i>Quay lại
+            </a>
+        </div>
+
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <h2 class="h5 mb-3"><i class="ti ti-ticket me-2 text-primary"></i>Thông tin đặt vé</h2>
+                        <table class="table table-borderless mb-0">
+                            <tr>
+                                <td class="text-secondary" style="width: 140px;">ID</td>
+                                <td th:text="${booking.id}">1</td>
+                            </tr>
+                            <tr>
+                                <td class="text-secondary">Mã vé</td>
+                                <td><strong th:text="${booking.ticketCode}">CINEMA-123</strong></td>
+                            </tr>
+                            <tr>
+                                <td class="text-secondary">Người dùng</td>
+                                <td th:text="${booking.user.username}">user</td>
+                            </tr>
+                            <tr>
+                                <td class="text-secondary">Ngày đặt</td>
+                                <td th:text="${#temporals.format(booking.bookingTime, 'dd/MM/yyyy HH:mm')}">01/01/2024</td>
+                            </tr>
+                            <tr>
+                                <td class="text-secondary">Trạng thái</td>
+                                <td>
+                                    <span class="badge rounded-pill"
+                                          th:classappend="${booking.status.name() == 'CANCELLED'} ? ' text-bg-secondary' : (${booking.checkedInAt != null} ? ' text-bg-danger' : (${booking.status.name() == 'PAID'} ? ' text-bg-info' : (${booking.status.name() == 'PENDING'} ? ' text-bg-warning' : ' text-bg-success')))"
+                                          th:text="${booking.status.name() == 'CANCELLED'} ? 'Đã hủy' : (${booking.checkedInAt != null} ? 'Đã dùng vé' : (${booking.status.name() == 'PAID'} ? 'Đã thanh toán' : (${booking.status.name() == 'PENDING'} ? 'Chờ thanh toán' : 'Đã xác nhận')))">Trạng thái</span>
+                                </td>
+                            </tr>
+                            <tr th:if="${booking.checkedInAt != null}">
+                                <td class="text-secondary">Check-in rạp</td>
+                                <td class="text-danger fw-semibold" th:text="${#temporals.format(booking.checkedInAt, 'dd/MM/yyyy HH:mm')}">—</td>
+                            </tr>
+                            <tr th:if="${booking.checkedInAt == null and (booking.status.name() == 'PAID' or booking.status.name() == 'CONFIRMED')}">
+                                <td class="text-secondary">Check-in rạp</td>
+                                <td><span class="text-secondary">Chưa quét mã</span></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <h2 class="h5 mb-3"><i class="ti ti-clock me-2 text-primary"></i>Thông tin suất chiếu</h2>
+                        <table class="table table-borderless mb-0">
+                            <tr>
+                                <td class="text-secondary" style="width: 140px;">Phim</td>
+                                <td th:text="${booking.showtime.movie.title}">Tên phim</td>
+                            </tr>
+                            <tr>
+                                <td class="text-secondary">Ngày chiếu</td>
+                                <td th:text="${#temporals.format(booking.showtime.startTime, 'dd/MM/yyyy')}">01/01/2024</td>
+                            </tr>
+                            <tr>
+                                <td class="text-secondary">Giờ chiếu</td>
+                                <td th:text="${#temporals.format(booking.showtime.startTime, 'HH:mm')}">18:00</td>
+                            </tr>
+                            <tr>
+                                <td class="text-secondary">Phòng</td>
+                                <td th:text="${booking.showtime.room.name}">Phòng 1</td>
+                            </tr>
+                            <tr>
+                                <td class="text-secondary">Tiền vé</td>
+                                <td><span th:text="${#numbers.formatDecimal(booking.totalPrice != null ? booking.totalPrice : 0, 1, 'COMMA', 0, 'POINT')}">80.000</span> VNĐ</td>
+                            </tr>
+                            <tr th:if="${booking.concessionTotal != null and booking.concessionTotal.compareTo(0) > 0}">
+                                <td class="text-secondary">Bắp nước</td>
+                                <td>+<span th:text="${#numbers.formatDecimal(booking.concessionTotal, 1, 'COMMA', 0, 'POINT')}">0</span> VNĐ</td>
+                            </tr>
+                            <tr>
+                                <td class="text-secondary fw-bold">Tổng</td>
+                                <td class="fw-bold text-danger">
+                                    <span th:text="${#numbers.formatDecimal(grossTotal, 1, 'COMMA', 0, 'POINT')}">0</span> VNĐ
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3 mt-2">
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <h2 class="h5 mb-3"><i class="ti ti-armchair me-2 text-primary"></i>Danh sách ghế</h2>
+                        <div class="d-flex flex-wrap gap-2">
+                            <span th:each="seat : ${booking.bookingSeats}"
+                                  class="badge bg-secondary rounded-3 px-3 py-2"
+                                  style="font-size: 0.875rem;"
+                                  th:text="${seat.seat.rowName + seat.seat.seatNumber}">A1</span>
+                            <span th:if="${#lists.isEmpty(booking.bookingSeats)}" class="text-secondary small">—</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <h2 class="h5 mb-3"><i class="ti ti-manual-stop me-2 text-primary"></i>Hành động</h2>
+                        <div th:if="${booking.status.name() == 'PAID'}" class="mb-3 text-center">
+                            <div class="qr-section">
+                                <img th:src="@{'https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=' + ${booking.ticketCode}}"
+                                     alt="QR Code" class="mb-2">
+                                <div class="small fw-bold" th:text="${booking.ticketCode}">CINEMA-123</div>
+                            </div>
+                        </div>
+                        <div class="d-flex flex-wrap gap-2">
+                            <form th:if="${booking.status.name() == 'PAID'}" th:action="@{'/staff/bookings/' + ${booking.id} + '/confirm'}" method="post">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="ti ti-check me-1"></i>Xác nhận thanh toán
+                                </button>
+                            </form>
+                            <form th:if="${booking.status.name() != 'CANCELLED' and booking.status.name() != 'CONFIRMED'}"
+                                  th:action="@{'/staff/bookings/' + ${booking.id} + '/cancel'}" method="post"
+                                  onsubmit="return confirm('Bạn có chắc chắn muốn hủy đặt vé này?');">
+                                <button type="submit" class="btn btn-danger">
+                                    <i class="ti ti-x me-1"></i>Hủy đặt vé
+                                </button>
+                            </form>
+                            <form th:if="${booking.checkedInAt != null and (booking.status.name() == 'PAID' or booking.status.name() == 'CONFIRMED')}"
+                                  th:action="@{'/staff/bookings/' + ${booking.id} + '/reset-check-in'}" method="post"
+                                  onsubmit="return confirm('Hoàn tác check-in? Chỉ dùng khi khách phản ánh nhầm / lỗi quét. Khách sẽ quét lại được.');">
+                                <button type="submit" class="btn btn-outline-warning">
+                                    <i class="ti ti-rotate-clockwise me-1"></i>Hoàn tác check-in
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</th:block>
+<th:block th:fragment="page-scripts"></th:block>
+</body>
+</html>

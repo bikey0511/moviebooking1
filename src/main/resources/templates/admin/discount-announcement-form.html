@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{staff/fragments/staff-layout :: layout(${announcement.id != null ? 'Sửa thông báo KM' : 'Đăng thông báo KM'}, 'discount-announcements', ~{::main-content}, ~{::page-scripts})}">
+<body>
+<th:block th:fragment="main-content">
+    <div class="container-fluid py-4" style="max-width:720px;">
+        <h1 class="fs-3 mb-1" th:text="${announcement.id != null} ? 'Sửa thông báo khuyến mãi' : 'Đăng thông báo mã giảm giá'">Đăng thông báo</h1>
+        <p class="text-secondary mb-4" th:if="${announcement.id == null}">Thời gian đăng sẽ lấy theo <strong>thời gian hiện tại của máy chủ</strong>. Chọn thời lượng hiển thị trước khi tự hết hạn.</p>
+        <p class="text-secondary mb-4" th:if="${announcement.id != null}">Cập nhật tiêu đề, mô tả hoặc ảnh. Có thể <strong>gia hạn thêm</strong> thời gian hiển thị.</p>
+        <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+        <form th:action="${announcement.id == null} ? @{/staff/discount-announcements} : @{/staff/discount-announcements/{id}/update(id=${announcement.id})}"
+              th:object="${announcement}"
+              method="post" enctype="multipart/form-data" class="card border-0 shadow-sm p-4">
+            <div class="mb-3">
+                <label class="form-label">Tiêu đề</label>
+                <input type="text" th:field="*{title}" class="form-control" required maxlength="200" placeholder="VD: Giảm 30% bắp nước cuối tuần">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Mô tả / nội dung (tùy chọn)</label>
+                <textarea th:field="*{description}" class="form-control" rows="4" maxlength="2000" placeholder="Chi tiết mã, điều kiện..."></textarea>
+            </div>
+            <div class="mb-3" th:if="${announcement.id != null and announcement.imageUrl != null and !announcement.imageUrl.isEmpty()}">
+                <label class="form-label">Ảnh hiện tại</label>
+                <div><img th:src="${announcement.imageUrl}" alt="" class="rounded border" style="max-width:100%;max-height:220px;object-fit:contain;"></div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label" th:if="${announcement.id != null}">Đổi hình (tùy chọn)</label>
+                <label class="form-label" th:unless="${announcement.id != null}">Hình ảnh khuyến mãi</label>
+                <input type="file" name="image" class="form-control" accept="image/*">
+            </div>
+            <div class="mb-4" th:if="${announcement.id == null}">
+                <label class="form-label">Hiển thị trong</label>
+                <select name="validHours" class="form-select">
+                    <option value="24">24 giờ</option>
+                    <option value="72" selected>3 ngày (72 giờ)</option>
+                    <option value="168">1 tuần (168 giờ)</option>
+                    <option value="720">30 ngày (720 giờ)</option>
+                </select>
+            </div>
+            <div class="mb-4" th:if="${announcement.id != null}">
+                <label class="form-label">Gia hạn thêm</label>
+                <select name="extendHours" class="form-select">
+                    <option value="0" selected>Không gia hạn</option>
+                    <option value="24">Thêm 24 giờ</option>
+                    <option value="72">Thêm 3 ngày (72 giờ)</option>
+                    <option value="168">Thêm 1 tuần</option>
+                    <option value="720">Thêm 30 ngày</option>
+                </select>
+                <div class="form-text">Hết hạn hiện tại: <span th:text="${#temporals.format(announcement.expiresAt, 'dd/MM/yyyy HH:mm')}">—</span></div>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary" th:text="${announcement.id != null} ? 'Lưu thay đổi' : 'Đăng ngay'">Gửi</button>
+                <a th:href="@{/staff/discount-announcements}" class="btn btn-outline-secondary">Hủy</a>
+            </div>
+        </form>
+    </div>
+</th:block>
+<th:block th:fragment="page-scripts"></th:block>
+</body>
+</html>

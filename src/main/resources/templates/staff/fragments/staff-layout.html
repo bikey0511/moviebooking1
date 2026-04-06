@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:fragment="layout (pageTitle, activeNav, mainContent, pageScripts)"
+      lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle} + ' - InApp Cinema Nhân viên'">Staff</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/inapp/assets/images/logo.svg}">
+    <script type="module" th:src="@{/inapp/assets/js/main.js}"></script>
+    <link rel="stylesheet" th:href="@{/inapp/assets/css/main.css}">
+    <link rel="stylesheet" th:href="@{/inapp/assets/css/admin-pages.css}">
+</head>
+<body>
+<div id="overlay" class="overlay"></div>
+
+<nav id="topbar" class="navbar bg-white border-bottom fixed-top topbar px-3">
+    <button id="toggleBtn" type="button" class="d-none d-lg-inline-flex btn btn-light btn-icon btn-sm">
+        <i class="ti ti-layout-sidebar-left-expand"></i>
+    </button>
+    <button id="mobileBtn" type="button" class="btn btn-light btn-icon btn-sm d-lg-none me-2">
+        <i class="ti ti-layout-sidebar-left-expand"></i>
+    </button>
+    <div class="ms-auto d-flex align-items-center gap-3 flex-wrap justify-content-end">
+        <span class="text-secondary small d-none d-sm-inline">
+            Xin chào, <strong sec:authentication="name">Staff</strong>
+        </span>
+        <span class="text-secondary small">Khu vực nhân viên</span>
+    </div>
+</nav>
+
+<aside id="sidebar" class="sidebar">
+    <div class="logo-area">
+        <a th:href="@{/staff/dashboard}" class="d-inline-flex align-items-center text-decoration-none">
+            <img th:src="@{/inapp/assets/images/logo.svg}" alt="" width="28" height="28" class="rounded">
+            <span class="logo-text ms-2 fw-semibold text-dark small">InApp Cinema — Nhân viên</span>
+        </a>
+    </div>
+    <ul class="nav flex-column">
+        <li class="px-4 py-2"><small class="nav-text">Menu</small></li>
+        <li>
+            <a class="nav-link" th:classappend="${activeNav == 'staff-home'} ? 'active'" th:href="@{/staff/dashboard}">
+                <i class="ti ti-home"></i><span class="nav-text">Trang chủ</span>
+            </a>
+        </li>
+        <li>
+            <a class="nav-link" th:classappend="${activeNav == 'check-in'} ? 'active'" th:href="@{/staff/check-in}">
+                <i class="ti ti-qrcode"></i><span class="nav-text">Quét mã vé</span>
+            </a>
+        </li>
+        <li>
+            <a class="nav-link" th:classappend="${activeNav == 'movies'} ? 'active'" th:href="@{/staff/movies}">
+                <i class="ti ti-movie"></i><span class="nav-text">Phim</span>
+            </a>
+        </li>
+        <li>
+            <a class="nav-link" th:classappend="${activeNav == 'bookings'} ? 'active'" th:href="@{/staff/bookings}">
+                <i class="ti ti-ticket"></i><span class="nav-text">Đặt vé</span>
+            </a>
+        </li>
+        <li>
+            <a class="nav-link" th:classappend="${activeNav == 'showtimes'} ? 'active'" th:href="@{/staff/showtimes}">
+                <i class="ti ti-clock"></i><span class="nav-text">Suất chiếu</span>
+            </a>
+        </li>
+        <li>
+            <a class="nav-link" th:classappend="${activeNav == 'rooms'} ? 'active'" th:href="@{/staff/rooms}">
+                <i class="ti ti-building"></i><span class="nav-text">Phòng chiếu</span>
+            </a>
+        </li>
+        <li>
+            <a class="nav-link" th:classappend="${activeNav == 'concessions'} ? 'active'" th:href="@{/staff/concessions}">
+                <i class="ti ti-cookie"></i><span class="nav-text">Bắp nước</span>
+            </a>
+        </li>
+        <li>
+            <a class="nav-link" th:classappend="${activeNav == 'vouchers'} ? 'active'" th:href="@{/staff/vouchers}">
+                <i class="ti ti-discount"></i><span class="nav-text">Mã giảm giá</span>
+            </a>
+        </li>
+        <li>
+            <a class="nav-link" th:classappend="${activeNav == 'discount-announcements'} ? 'active'" th:href="@{/staff/discount-announcements}">
+                <i class="ti ti-speakerphone"></i><span class="nav-text">TB khuyến mãi</span>
+            </a>
+        </li>
+        <li sec:authorize="hasRole('ADMIN')" class="px-4 pt-2">
+            <small class="nav-text text-secondary">Quản trị</small>
+        </li>
+        <li sec:authorize="hasRole('ADMIN')">
+            <a class="nav-link" th:href="@{/admin/analytics}">
+                <i class="ti ti-shield-lock"></i><span class="nav-text">Vào Admin</span>
+            </a>
+        </li>
+        <li class="px-4 pt-4 pb-2"><small class="nav-text">Tài khoản</small></li>
+        <li>
+            <a class="nav-link" th:classappend="${activeNav == 'profile'} ? 'active'" th:href="@{/staff/profile}">
+                <i class="ti ti-user"></i><span class="nav-text">Thông tin cá nhân</span>
+            </a>
+        </li>
+        <li>
+            <form th:action="@{/auth/logout}" method="post" class="w-100">
+                <button type="submit" class="nav-link border-0 bg-transparent w-100 text-start d-flex align-items-center gap-2 py-2 px-4" style="cursor:pointer;">
+                    <i class="ti ti-logout"></i><span class="nav-text">Đăng xuất</span>
+                </button>
+            </form>
+        </li>
+    </ul>
+</aside>
+
+<main id="content" class="content py-10">
+    <th:block th:replace="${mainContent}"></th:block>
+</main>
+
+<th:block th:replace="${pageScripts}"></th:block>
+</body>
+</html>

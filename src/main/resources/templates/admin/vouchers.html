@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{staff/fragments/staff-layout :: layout('Quản lý mã giảm giá', 'vouchers', ~{::main-content}, ~{::page-scripts})}">
+<head><title>Vouchers</title></head>
+<body>
+<th:block th:fragment="main-content">
+    <div class="container-fluid">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+            <div>
+                <h1 class="fs-3 mb-1">Quản lý mã giảm giá</h1>
+                <p class="mb-0 text-secondary">Mã khuyến mãi cho vé và bắp nước. Mỗi tài khoản tối đa 2 lần / mã vé và 3 lần / mã bắp nước (sau mỗi lần thanh toán thành công).</p>
+            </div>
+            <a th:href="@{/staff/vouchers/new}" class="btn btn-primary">
+                <i class="ti ti-plus me-1"></i>Thêm mã
+            </a>
+        </div>
+
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="ti ti-check me-2"></i><span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                        <tr>
+                            <th>Mã</th>
+                            <th>Áp dụng</th>
+                            <th>Giá trị</th>
+                            <th>Hạn dùng</th>
+                            <th>Đã dùng</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="v : ${vouchers}">
+                            <td><strong th:text="${v.code}">CODE</strong></td>
+                            <td>
+                                <span class="badge rounded-pill text-bg-primary" th:if="${v.discountType?.name() == 'TICKET'}">Giảm vé</span>
+                                <span class="badge rounded-pill text-bg-info" th:if="${v.discountType?.name() == 'CONCESSION'}">Giảm bắp nước</span>
+                            </td>
+                            <td>
+                                <span th:if="${v.valueType?.name() == 'PERCENT'}" th:text="|${v.value}%|">10%</span>
+                                <span th:unless="${v.valueType?.name() == 'PERCENT'}" th:text="|${#numbers.formatInteger(v.value, 0, 'COMMA')} VNĐ|">50.000 VNĐ</span>
+                            </td>
+                            <td th:text="${v.validTo != null} ? ${#temporals.format(v.validTo, 'dd/MM/yyyy')} : 'Không giới hạn'">31/12/2025</td>
+                            <td>
+                                <span th:text="${v.usedCount}"></span>
+                                <span th:if="${v.maxUses != null}" th:text="|/ ${v.maxUses}|" class="text-secondary"></span>
+                            </td>
+                            <td>
+                                <a th:href="@{/staff/vouchers/edit/{id}(id=${v.id})}" class="btn btn-sm btn-primary">
+                                    <i class="ti ti-edit"></i>
+                                </a>
+                                <a th:href="@{/staff/vouchers/delete/{id}(id=${v.id})}"
+                                   class="btn btn-sm btn-outline-danger"
+                                   onclick="return confirm('Xóa mã này?');">
+                                    <i class="ti ti-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(vouchers)}">
+                            <td colspan="6" class="text-center text-secondary py-4">Chưa có mã giảm giá</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</th:block>
+<th:block th:fragment="page-scripts"></th:block>
+</body>
+</html>

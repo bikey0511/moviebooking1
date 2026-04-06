@@ -1,0 +1,18 @@
+Phân quyền & Đăng nhập — 3 vai trò, login local + Google OAuth2, chuyển hướng theo role
+Quản lý phim & Suất chiếu — trang chủ, danh sách, chi tiết, CRUD phim
+Hệ thống đặt vé — chọn ghế → bắp nước → thanh toán → đếm ngược → xác nhận
+Quản lý phòng chiếu & ghế — tạo phòng, ghế tự động, ghế đôi
+Quản lý suất chiếu — thêm suất, kiểm tra xung đột giờ
+Quản lý đơn hàng (Staff/Admin) — xác nhận, hủy, hoàn tác check-in
+Voucher & Khuyến mãi — tạo voucher, thông báo, voucher chào mừng
+Quản lý bắp nước — CRUD combo/đồ ăn/nước
+Quét mã QR check-in — camera + nhập tay, vòng xanh / lỗi đỏ kèm thời gian đã quét
+Quiz đố câu hỏi — 5 câu ngẫu nhiên, nhận voucher khi thắng
+Trang cá nhân & Tài khoản — user profile, staff profile, admin quản lý nhân viên
+Trang thống kê (Admin) — dashboard, biểu đồ doanh thu
+Các tính năng bổ sung — dark theme, toast popup, responsive, bảo mật
+Công nghệ sử dụng — bảng tổng hợp
+Tài khoản mặc định — admin/staff/user
+Cấu trúc mã nguồn — tree structure + mô tả từng file chính
+Database schema — các bảng chính
+Luồng nghiệp vụ tổng hợp — đặt vé + quiz

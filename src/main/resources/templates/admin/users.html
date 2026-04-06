@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{admin/fragments/admin-layout :: layout('Quản lý người dùng', 'users', ~{::main-content}, ~{::page-scripts})}">
+<head><title>Users</title></head>
+<body>
+<th:block th:fragment="main-content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+                    <div>
+                        <h1 class="fs-3 mb-1">Quản lý người dùng</h1>
+                        <p class="mb-0 text-secondary">Danh sách tài khoản và trạng thái hoạt động</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="card table-responsive shadow-sm border-0">
+                    <table class="table mb-0 text-nowrap table-hover align-middle">
+                        <thead class="table-light border-light">
+                        <tr>
+                            <th scope="col">ID</th>
+                            <th scope="col">Tên đăng nhập</th>
+                            <th scope="col">Email</th>
+                            <th scope="col">Vai trò</th>
+                            <th scope="col">Trạng thái</th>
+                            <th scope="col" class="text-end">Thao tác</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="user : ${users}" class="align-middle">
+                            <td class="text-secondary" th:text="${user.id}">1</td>
+                            <td class="fw-medium" th:text="${user.username}">username</td>
+                            <td th:text="${user.email}">email@example.com</td>
+                            <td>
+                                <span class="badge rounded-pill"
+                                      th:classappend="${user.role.name() == 'ADMIN'} ? ' text-bg-danger' : (${user.role.name() == 'STAFF'} ? ' text-bg-warning text-dark' : ' text-bg-primary')"
+                                      th:text="${user.role.name() == 'ADMIN'} ? 'Quản trị viên' : (${user.role.name() == 'STAFF'} ? 'Nhân viên' : 'Người dùng')">USER</span>
+                            </td>
+                            <td>
+                                <span class="badge rounded-pill text-bg-success" th:if="${user.enabled}">Hoạt động</span>
+                                <span class="badge rounded-pill text-bg-secondary" th:unless="${user.enabled}">Bị khóa</span>
+                            </td>
+                            <td class="text-end">
+                                <form th:if="${!user.enabled}" th:action="@{/admin/users/{id}/enable(id=${user.id})}"
+                                      method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-outline-success">
+                                        <i class="ti ti-lock-open me-1"></i>Mở khóa
+                                    </button>
+                                </form>
+                                <form th:if="${user.enabled and user.role.name() != 'ADMIN' and user.id != currentUserId}"
+                                      th:action="@{/admin/users/{id}/disable(id=${user.id})}"
+                                      method="post" class="d-inline"
+                                      onsubmit="return confirm('Bạn có chắc chắn muốn khóa tài khoản này?');">
+                                    <button type="submit" class="btn btn-sm btn-warning">
+                                        <i class="ti ti-lock me-1"></i>Khóa
+                                    </button>
+                                </form>
+                                <span th:if="${user.enabled and (user.role.name() == 'ADMIN' or user.id == currentUserId)}"
+                                      class="text-secondary small">—</span>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(users)}">
+                            <td colspan="6" class="text-center text-secondary py-5">Chưa có người dùng nào</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</th:block>
+<th:block th:fragment="page-scripts"></th:block>
+</body>
+</html>

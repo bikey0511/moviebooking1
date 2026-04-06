@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{staff/fragments/staff-layout :: layout('Quản lý đặt vé', 'bookings', ~{::main-content}, ~{::page-scripts})}">
+<head><title>Bookings</title></head>
+<body>
+<th:block th:fragment="main-content">
+    <div class="container-fluid">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+            <div>
+                <h1 class="fs-3 mb-1">Quản lý đặt vé</h1>
+                <p class="mb-0 text-secondary">Danh sách vé đã đặt và trạng thái thanh toán</p>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="admin-filter-tabs">
+                    <a th:href="@{/staff/bookings}" th:classappend="${currentStatus == null} ? 'active'">Tất cả</a>
+                    <a th:href="@{/staff/bookings(status='PENDING')}" th:classappend="${currentStatus == 'PENDING'} ? 'active'">Chờ thanh toán</a>
+                    <a th:href="@{/staff/bookings(status='PAID')}" th:classappend="${currentStatus == 'PAID'} ? 'active'">Đã thanh toán</a>
+                    <a th:href="@{/staff/bookings(status='CONFIRMED')}" th:classappend="${currentStatus == 'CONFIRMED'} ? 'active'">Đã xác nhận</a>
+                    <a th:href="@{/staff/bookings(status='CANCELLED')}" th:classappend="${currentStatus == 'CANCELLED'} ? 'active'">Đã hủy</a>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Người dùng</th>
+                            <th>Phim</th>
+                            <th>Phòng</th>
+                            <th>Suất chiếu</th>
+                            <th>Tổng thanh toán</th>
+                            <th>Trạng thái</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="booking : ${bookings.content}">
+                            <td th:text="${booking.id}">1</td>
+                            <td th:text="${booking.user.username}">user</td>
+                            <td th:text="${booking.showtime.movie.title}">Phim</td>
+                            <td th:text="${booking.showtime.room.name}">Phòng 1</td>
+                            <td th:text="${#temporals.format(booking.showtime.startTime, 'dd/MM/yyyy HH:mm')}">01/01/2024</td>
+                            <td>
+                                <div class="small text-secondary">
+                                    Vé: <span th:text="${#numbers.formatDecimal(booking.totalPrice != null ? booking.totalPrice : 0, 1, 'COMMA', 0, 'POINT')}">0</span> VNĐ
+                                </div>
+                                <div th:if="${booking.concessionTotal != null and booking.concessionTotal.compareTo(0) > 0}" class="small text-secondary">
+                                    Bắp nước: <span th:text="${#numbers.formatDecimal(booking.concessionTotal, 1, 'COMMA', 0, 'POINT')}">0</span> VNĐ
+                                </div>
+                                <div class="fw-semibold pt-1" style="color: var(--bs-danger);">
+                                    Tổng: <span th:text="${#numbers.formatDecimal((booking.totalPrice != null ? booking.totalPrice : T(java.math.BigDecimal).ZERO).add(booking.concessionTotal != null ? booking.concessionTotal : T(java.math.BigDecimal).ZERO), 1, 'COMMA', 0, 'POINT')}">0</span> VNĐ
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge rounded-pill"
+                                      th:classappend="${booking.status.name() == 'CANCELLED'} ? ' text-bg-secondary' : (${booking.checkedInAt != null} ? ' text-bg-danger' : (${booking.status.name() == 'PAID'} ? ' text-bg-info' : (${booking.status.name() == 'PENDING'} ? ' text-bg-warning' : ' text-bg-success')))"
+                                      th:text="${booking.status.name() == 'CANCELLED'} ? 'Đã hủy' : (${booking.checkedInAt != null} ? 'Đã dùng vé' : (${booking.status.name() == 'PAID'} ? 'Đã thanh toán' : (${booking.status.name() == 'PENDING'} ? 'Chờ thanh toán' : 'Đã xác nhận')))">Trạng thái</span>
+                            </td>
+                            <td>
+                                <a th:href="@{/staff/bookings/{id}(id=${booking.id})}" class="btn btn-sm btn-primary">
+                                    <i class="ti ti-eye"></i>
+                                </a>
+                                <form th:if="${booking.status.name() == 'PAID'}" th:action="@{'/staff/bookings/' + ${booking.id} + '/confirm'}" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-success" title="Xác nhận thanh toán">
+                                        <i class="ti ti-check"></i>
+                                    </button>
+                                </form>
+                                <form th:if="${booking.status.name() != 'CANCELLED' and booking.status.name() != 'CONFIRMED'}" th:action="@{'/staff/bookings/' + ${booking.id} + '/cancel'}" method="post" class="d-inline"
+                                      onsubmit="return confirm('Bạn có chắc chắn muốn hủy đặt vé này?');">
+                                    <button type="submit" class="btn btn-sm btn-danger">
+                                        <i class="ti ti-x"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(bookings.content)}">
+                            <td colspan="8" class="text-center text-secondary py-4">Không tìm thấy đặt vé nào</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <nav th:if="${bookings.totalPages > 1}" class="mt-3">
+                    <ul class="pagination justify-content-center mb-0">
+                        <li class="page-item" th:classappend="${bookings.first} ? 'disabled'">
+                            <a class="page-link" th:href="@{/staff/bookings(page=${bookings.number}, status=${currentStatus})}">Trước</a>
+                        </li>
+                        <li class="page-item" th:each="i : ${#numbers.sequence(0, bookings.totalPages - 1)}"
+                            th:classappend="${i == bookings.number} ? 'active'">
+                            <a class="page-link" th:href="@{/staff/bookings(page=${i}, status=${currentStatus})}" th:text="${i + 1}">1</a>
+                        </li>
+                        <li class="page-item" th:classappend="${bookings.last} ? 'disabled'">
+                            <a class="page-link" th:href="@{/staff/bookings(page=${bookings.number + 1}, status=${currentStatus})}">Sau</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</th:block>
+<th:block th:fragment="page-scripts"></th:block>
+</body>
+</html>

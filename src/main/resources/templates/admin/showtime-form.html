@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{staff/fragments/staff-layout :: layout('Thêm / sửa suất chiếu', 'showtimes', ~{::main-content}, ~{::page-scripts})}">
+<head><title>Showtime form</title></head>
+<body>
+<th:block th:fragment="main-content">
+    <div class="container-fluid" style="max-width: 700px;">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+            <div>
+                <h1 class="fs-3 mb-1">Thêm suất chiếu mới</h1>
+                <p class="mb-0 text-secondary">Chọn phim, phòng và giờ chiếu</p>
+            </div>
+            <a th:href="@{/staff/showtimes(date=${returnDate})}" class="btn btn-outline-secondary">
+                <i class="ti ti-arrow-left me-1"></i>Quay lại
+            </a>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <div th:if="${error}" class="alert alert-danger mb-3" role="alert">
+                    <i class="ti ti-alert-circle me-2"></i><span th:text="${error}"></span>
+                </div>
+                <form th:action="@{/staff/showtimes/save}" method="post">
+                    <input type="hidden" name="returnDate" th:value="${returnDate}"/>
+                    <div class="mb-3">
+                        <label class="form-label">Chọn phim</label>
+                        <select class="form-select" name="movieId" required>
+                            <option value="">— Chọn phim —</option>
+                            <option th:each="movie : ${movies}" th:value="${movie.id}" th:text="${movie.title}">Phim</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Chọn phòng</label>
+                        <select class="form-select" name="roomId" required>
+                            <option value="">— Chọn phòng —</option>
+                            <option th:each="room : ${rooms}" th:value="${room.id}" th:text="|${room.name} (${room.totalSeats} ghế)|">Phòng</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Giờ chiếu</label>
+                        <input type="time" class="form-control" name="showTime" required
+                               th:value="${defaultShowTime}"
+                               th:attr="min=${isSelectedToday ? minLocalTime : null}">
+                        <small class="text-secondary d-block mt-1">
+                            Ngày suất: <strong th:text="${#temporals.format(prefillDate, 'dd/MM/yyyy')}">—</strong> (theo lịch đang xem).
+                            Cùng phòng không được chồng giờ với suất khác (kể cả phim khác).
+                        </small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Giá vé (VNĐ)</label>
+                        <input type="number" class="form-control" name="price" placeholder="Nhập giá vé" required min="10000" step="1000">
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="ti ti-device-floppy me-1"></i>Lưu
+                        </button>
+                        <a th:href="@{/staff/showtimes(date=${returnDate})}" class="btn btn-outline-secondary">Hủy</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</th:block>
+<th:block th:fragment="page-scripts"></th:block>
+</body>
+</html>

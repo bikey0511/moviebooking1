@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${announcement.title} + ' - CINEMA'">Ưu đãi</title>
+    <th:block th:replace="~{fragments/user-head :: userStyles}"></th:block>
+    <style>
+        .promo-detail-wrap { padding-top: 100px; padding-bottom: 60px; min-height: 60vh; }
+        .promo-detail-card {
+            max-width: 720px;
+            margin: 0 auto;
+            background: var(--gunmetal-1);
+            border-radius: 16px;
+            border: 1px solid rgba(244, 208, 63, 0.25);
+            overflow: hidden;
+        }
+        .promo-detail-card img {
+            width: 100%;
+            max-height: min(70vh, 560px);
+            object-fit: contain;
+            background: #0d0d0d;
+            display: block;
+        }
+        .promo-detail-body { padding: 24px; }
+        .promo-detail-body h1 { font-size: 1.35rem; margin-bottom: 12px; color: var(--white); }
+        .promo-detail-body .desc { color: var(--gainsboro); line-height: 1.6; white-space: pre-wrap; }
+        .promo-detail-meta { color: var(--citrine); font-size: var(--fs-11); margin-top: 16px; }
+        .promo-expired-banner { background: rgba(231, 76, 60, 0.2); color: #e74c3c; padding: 10px 16px; font-size: var(--fs-11); }
+    </style>
+</head>
+<body id="top">
+    <th:block th:replace="~{fragments/user-layout :: userHeader}"></th:block>
+    <main>
+        <article class="promo-detail-wrap">
+            <div class="container">
+                <div class="promo-detail-card">
+                    <div class="promo-expired-banner" th:if="${!promoStillActive}">Thông báo này đã hết hạn hiển thị.</div>
+                    <img th:if="${announcement.imageUrl != null and !announcement.imageUrl.isEmpty()}"
+                         th:src="${announcement.imageUrl}"
+                         th:alt="${announcement.title}"
+                         width="1200" height="675" fetchpriority="high" decoding="async">
+                    <div class="promo-detail-body">
+                        <h1 th:text="${announcement.title}">Tiêu đề</h1>
+                        <p class="desc" th:if="${announcement.description != null and !announcement.description.isEmpty()}"
+                           th:text="${announcement.description}">Mô tả</p>
+                        <p class="desc" th:unless="${announcement.description != null and !announcement.description.isEmpty()}">
+                            Xem chi tiết trên hình khuyến mãi (nếu có).
+                        </p>
+                        <p class="promo-detail-meta mb-0">
+                            Hết hạn: <span th:text="${#temporals.format(announcement.expiresAt, 'dd/MM/yyyy HH:mm')}">—</span>
+                        </p>
+                        <a th:href="@{/}" class="btn btn-outline mt-4" style="border-color: var(--citrine); color: var(--citrine);">
+                            <ion-icon name="arrow-back"></ion-icon> Về trang chủ
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </article>
+    </main>
+    <th:block th:replace="~{fragments/user-layout :: userFooter}"></th:block>
+    <th:block th:replace="~{fragments/user-layout :: commonScripts}"></th:block>
+    <script th:inline="javascript">
+        (function () {
+            var id = /*[[${announcement.id}]]*/ null;
+            if (id == null) return;
+            try {
+                var key = 'cinema_promo_read_ids';
+                var raw = localStorage.getItem(key);
+                var arr = raw ? JSON.parse(raw) : [];
+                if (!Array.isArray(arr)) arr = [];
+                var sid = String(id);
+                if (arr.indexOf(sid) === -1) {
+                    arr.push(sid);
+                    localStorage.setItem(key, JSON.stringify(arr));
+                }
+            } catch (e) { /* ignore */ }
+        })();
+    </script>
+</body>
+</html>

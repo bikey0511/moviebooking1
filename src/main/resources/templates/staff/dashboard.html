@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{staff/fragments/staff-layout :: layout('Trang nhân viên', 'staff-home', ~{::main-content}, ~{::page-scripts})}">
+<head><title>Staff</title></head>
+<body>
+<th:block th:fragment="main-content">
+    <div class="container-fluid" style="max-width: 960px;">
+        <div class="mb-4">
+            <h1 class="fs-3 mb-1">Khu vực nhân viên</h1>
+            <p class="mb-0 text-secondary">Vận hành rạp: suất chiếu, đặt vé, quét mã vé vào rạp, v.v.</p>
+        </div>
+        <div class="row g-3">
+            <div class="col-sm-6 col-lg-4">
+                <a th:href="@{/staff/check-in}" class="text-decoration-none">
+                    <div class="card border-0 shadow-sm h-100 admin-stat-card text-start">
+                        <div class="admin-stat-icon mb-2"><i class="ti ti-qrcode"></i></div>
+                        <div class="fw-semibold text-dark">Quét mã vé</div>
+                        <div class="small text-secondary">Check-in khách đã mua vé</div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+                <a th:href="@{/staff/showtimes}" class="text-decoration-none">
+                    <div class="card border-0 shadow-sm h-100 admin-stat-card text-start">
+                        <div class="admin-stat-icon mb-2"><i class="ti ti-clock"></i></div>
+                        <div class="fw-semibold text-dark">Suất chiếu</div>
+                        <div class="small text-secondary">Lịch 7 ngày, thêm giờ chiếu</div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+                <a th:href="@{/staff/bookings}" class="text-decoration-none">
+                    <div class="card border-0 shadow-sm h-100 admin-stat-card text-start">
+                        <div class="admin-stat-icon mb-2"><i class="ti ti-ticket"></i></div>
+                        <div class="fw-semibold text-dark">Đặt vé</div>
+                        <div class="small text-secondary">Xác nhận / hủy đơn</div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+                <a th:href="@{/staff/movies}" class="text-decoration-none">
+                    <div class="card border-0 shadow-sm h-100 admin-stat-card text-start">
+                        <div class="admin-stat-icon mb-2"><i class="ti ti-movie"></i></div>
+                        <div class="fw-semibold text-dark">Phim</div>
+                        <div class="small text-secondary">Danh sách &amp; poster</div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+                <a th:href="@{/staff/rooms}" class="text-decoration-none">
+                    <div class="card border-0 shadow-sm h-100 admin-stat-card text-start">
+                        <div class="admin-stat-icon mb-2"><i class="ti ti-building"></i></div>
+                        <div class="fw-semibold text-dark">Phòng chiếu</div>
+                        <div class="small text-secondary">Cấu hình phòng</div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+                <a th:href="@{/staff/concessions}" class="text-decoration-none">
+                    <div class="card border-0 shadow-sm h-100 admin-stat-card text-start">
+                        <div class="admin-stat-icon mb-2"><i class="ti ti-cookie"></i></div>
+                        <div class="fw-semibold text-dark">Bắp nước</div>
+                        <div class="small text-secondary">Combo &amp; giá</div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+                <a th:href="@{/staff/vouchers}" class="text-decoration-none">
+                    <div class="card border-0 shadow-sm h-100 admin-stat-card text-start">
+                        <div class="admin-stat-icon mb-2"><i class="ti ti-discount"></i></div>
+                        <div class="fw-semibold text-dark">Mã giảm giá</div>
+                        <div class="small text-secondary">Tạo &amp; chỉnh sửa mã</div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+                <a th:href="@{/staff/discount-announcements}" class="text-decoration-none">
+                    <div class="card border-0 shadow-sm h-100 admin-stat-card text-start">
+                        <div class="admin-stat-icon mb-2"><i class="ti ti-speakerphone"></i></div>
+                        <div class="fw-semibold text-dark">TB khuyến mãi</div>
+                        <div class="small text-secondary">Thông báo trên web</div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</th:block>
+<th:block th:fragment="page-scripts"></th:block>
+</body>
+</html>
