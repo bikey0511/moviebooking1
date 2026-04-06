@@ -39,11 +39,6 @@ Sửa `src/main/resources/application.properties` (hoặc dùng biến môi trư
 
 Hoặc build rồi chạy JAR:
 
-```bash
-mvn -q -DskipTests package
-java -jar target/doannhom15-0.0.1-SNAPSHOT.jar
-```
-
 3. Mở trình duyệt: **http://localhost:8080**
 
 ### Tài khoản mẫu (lần chạy đầu, khi database chưa có phòng/phim)
